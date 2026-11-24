@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portaria Simples</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+            }
+            main {
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 font-sans">
+
+    <!-- TELA DE LOGIN DO VIGILANTE -->
+    <div id="tela-login" class="no-print fixed inset-0 z-50 bg-slate-900/95 flex items-center justify-center p-4">
+        <form onsubmit="fazerLogin(event)"
+            class="bg-white text-slate-800 w-full max-w-sm p-6 rounded-xl shadow-xl border border-slate-200 space-y-4">
+            <div>
+                <h2 class="text-lg font-bold text-slate-900">Acesso do Vigilante</h2>
+                <p class="text-xs text-slate-500">Informe usuário e senha para acessar a portaria</p>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Usuário *</label>
+                <input type="text" id="login-usuario" required autocomplete="username" placeholder="Usuário"
+                    class="w-full border p-2 rounded">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Senha *</label>
+                <input type="password" id="login-senha" required autocomplete="current-password" placeholder="••••••••"
+                    class="w-full border p-2 rounded">
+            </div>
+            <button type="submit"
+                class="w-full bg-slate-900 text-white font-semibold py-2 rounded hover:bg-slate-800">
+                Entrar
+            </button>
+        </form>
+    </div>
+
+    <header class="no-print bg-slate-900 text-white shadow">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <h1 class="text-lg font-bold">Portaria — Registro Rápido</h1>
+            <div class="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm">
+                <span class="bg-slate-800 px-3 py-1 rounded">Pedestres: <strong id="cnt-ped" class="text-amber-400">0</strong></span>
+                <span class="bg-slate-800 px-3 py-1 rounded">Frotas: <strong id="cnt-fro" class="text-blue-400">0</strong></span>
+                <span class="bg-slate-800 px-3 py-1 rounded">Encomendas: <strong id="cnt-enc" class="text-emerald-400">0</strong></span>
+                <div class="bg-slate-800 px-3 py-1 rounded flex items-center gap-2">
+                    <span class="text-xs text-slate-300">Vigilante: <strong id="vigilante-logado" class="text-white">-</strong></span>
+                    <button type="button" onclick="sairSistema()"
+                        class="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-slate-200">
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-6">
+        <!-- Abas principais com ícones -->
+        <div class="no-print flex flex-wrap gap-2 border-b border-slate-300 mb-6">
+            <button type="button" onclick="selecionarAba('pedestres', 'p-nome')" id="btn-pedestres"
+                class="aba inline-flex items-center gap-2 px-4 py-2 font-semibold border-b-2 border-slate-900 text-slate-900">
+                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="5" r="2" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 22l2-7 3 2v5M12 9l-2 4-3 2M12 9l2 2 3 1" />
+                </svg>
+                <span>Pedestres</span>
+            </button>
+
+            <button type="button" onclick="selecionarAba('frotas', 'f-busca')" id="btn-frotas"
+                class="aba inline-flex items-center gap-2 px-4 py-2 font-semibold text-slate-500 hover:text-slate-800">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 11l1.5-4.5A2 2 0 018.4 5h7.2a2 2 0 011.9 1.5L19 11m-14 0h14m-14 0v6a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-6M7.5 14h.01M16.5 14h.01" />
+                </svg>
+                <span>Frotas</span>
+            </button>
+
+            <button type="button" onclick="selecionarAba('encomendas', 'e-dest')" id="btn-encomendas"
+                class="aba inline-flex items-center gap-2 px-4 py-2 font-semibold text-slate-500 hover:text-slate-800">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                <span>Encomendas</span>
+            </button>
+
+            <button type="button" onclick="selecionarAba('relatorios')" id="btn-relatorios"
+                class="aba inline-flex items-center gap-2 px-4 py-2 font-semibold text-slate-500 hover:text-slate-800">
+                <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Relatórios</span>
+            </button>
+        </div>
+
+        <!-- 1. PEDESTRES -->
+        <section id="sec-pedestres" class="tela no-print space-y-5">
+            <form onsubmit="addPedestre(event)" class="bg-white p-4 rounded-lg shadow-sm border space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" id="tipo-btn-visitante" onclick="setTipoPedestre('Visitante')"
+                            class="px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-slate-900 text-white transition">
+                            Visitante
+                        </button>
+                        <button type="button" id="tipo-btn-colaborador" onclick="setTipoPedestre('Colaborador')"
+                            class="px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+                            Colaborador
+                        </button>
+                    </div>
+
+                    <button type="button" onclick="toggleBoxCadastro('box-cad-colab')"
+                        class="text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition">
+                        + Cadastrar Colaborador no Banco
+                    </button>
+                </div>
+
+                <!-- Cadastro rápido de Colaborador direto no banco -->
+                <div id="box-cad-colab" class="hidden bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                    <div class="text-xs font-bold text-slate-700">Novo Colaborador (salvo direto no banco)</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                        <input type="text" id="cad-c-nome" placeholder="Nome completo *" class="border p-2 rounded bg-white text-sm sm:col-span-2">
+                        <input type="text" id="cad-c-depto" placeholder="Departamento" class="border p-2 rounded bg-white text-sm">
+                        <div class="flex gap-2">
+                            <input type="text" id="cad-c-mat" placeholder="Matrícula" class="border p-2 rounded bg-white text-sm w-full">
+                            <button type="button" onclick="salvarNovoColaborador()"
+                                class="bg-slate-900 text-white text-xs font-semibold px-3 rounded hover:bg-slate-800 shrink-0">
+                                Salvar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campos Visitante -->
+                <div id="campos-visitante" class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-start">
+                    <input type="text" id="p-nome" placeholder="Nome Completo *" required class="border p-2 rounded">
+                    <input type="text" id="p-doc" placeholder="CPF ou RG *" required class="border p-2 rounded">
+                    <input type="text" id="p-destino" placeholder="Destino dentro da empresa *" required class="border p-2 rounded">
+                    <input type="text" id="p-resp" placeholder="Responsável *" required class="border p-2 rounded">
+                    <div>
+                        <input type="time" id="p-hora-vis" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
+                        <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+                    </div>
+                </div>
+
+                <!-- Campos Colaborador -->
+                <div id="campos-colaborador" class="hidden grid grid-cols-1 sm:grid-cols-4 gap-3 items-start">
+                    <div class="relative">
+                        <input type="text" id="p-busca-colab" oninput="buscarColaboradores(this.value, 'pedestre')"
+                            onfocus="buscarColaboradores(this.value, 'pedestre')" placeholder="Buscar colaborador no banco *"
+                            autocomplete="off" class="border p-2 rounded w-full">
+                        <div id="sugestoes-colab-pedestre"
+                            class="hidden absolute z-20 left-0 right-0 bg-white border border-slate-300 rounded shadow-md mt-1 max-h-48 overflow-y-auto">
+                        </div>
+                    </div>
+                    <input type="text" id="p-colab-nome" placeholder="Nome do Colaborador *" readonly
+                        class="border p-2 rounded bg-slate-50 text-slate-700">
+                    <input type="text" id="p-colab-depto" placeholder="Departamento" readonly
+                        class="border p-2 rounded bg-slate-50 text-slate-600">
+                    <div>
+                        <input type="time" id="p-hora-colab" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
+                        <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit"
+                        class="inline-flex items-center justify-center gap-2 bg-slate-900 text-white font-semibold py-2 px-5 rounded hover:bg-slate-800">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="5" r="2" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 22l2-7 3 2v5M12 9l-2 4-3 2M12 9l2 2 3 1" />
+                        </svg>
+                        <span>Registrar Entrada</span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="bg-white rounded-lg shadow-sm border overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 border-b text-slate-600">
+                        <tr>
+                            <th class="p-3">Hora</th>
+                            <th class="p-3">Nome</th>
+                            <th class="p-3">Tipo / Doc / Destino / Resp.</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tb-pedestres" class="divide-y"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 2. FROTAS -->
+        <section id="sec-frotas" class="tela no-print hidden space-y-5">
+            <form onsubmit="addFrota(event)" class="bg-white p-4 rounded-lg shadow-sm border space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" id="frota-btn-frota" onclick="setTipoFrota('FROTA')"
+                            class="px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-blue-700 text-white transition">
+                            Frota
+                        </button>
+                        <button type="button" id="frota-btn-visitante" onclick="setTipoFrota('VISITANTE')"
+                            class="px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+                            Visitante
+                        </button>
+                    </div>
+
+                    <button type="button" onclick="toggleBoxCadastro('box-cad-frota')"
+                        class="text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
+                        + Cadastrar Veículo da Frota no Banco
+                    </button>
+                </div>
+
+                <!-- Cadastro rápido de Veículo da Frota direto no banco -->
+                <div id="box-cad-frota" class="hidden bg-blue-50/50 p-3 rounded-lg border border-blue-200 space-y-2">
+                    <div class="text-xs font-bold text-blue-900">Novo Veículo da Frota (salvo direto no banco)</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                        <input type="text" id="cad-f-placa" placeholder="Placa *" class="border p-2 rounded bg-white text-sm uppercase">
+                        <input type="text" id="cad-f-modelo" placeholder="Modelo / Cor *" class="border p-2 rounded bg-white text-sm sm:col-span-2">
+                        <div class="flex gap-2">
+                            <input type="number" id="cad-f-km" placeholder="KM Atual" class="border p-2 rounded bg-white text-sm w-full">
+                            <button type="button" onclick="salvarNovaFrota()"
+                                class="bg-blue-700 text-white text-xs font-semibold px-3 rounded hover:bg-blue-800 shrink-0">
+                                Salvar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campos quando selecionado FROTA -->
+                <div id="campos-frota-propria" class="grid grid-cols-1 sm:grid-cols-6 gap-3 items-start">
+                    <div class="relative sm:col-span-2">
+                        <input type="text" id="f-busca" oninput="buscarFrotas(this.value)" onfocus="buscarFrotas(this.value)"
+                            placeholder="Buscar veículo da frota no banco *" autocomplete="off"
+                            class="border p-2 rounded w-full">
+                        <div id="sugestoes-frota"
+                            class="hidden absolute z-20 left-0 right-0 bg-white border border-slate-300 rounded shadow-md mt-1 max-h-48 overflow-y-auto">
+                        </div>
+                    </div>
+                    <input type="text" id="f-placa" placeholder="Placa *" required readonly
+                        class="border p-2 rounded uppercase bg-slate-50 text-slate-700">
+                    <input type="text" id="f-modelo" placeholder="Modelo *" required readonly
+                        class="border p-2 rounded bg-slate-50 text-slate-700">
+
+                    <!-- Motorista obrigatoriamente cadastrado no banco -->
+                    <div class="relative sm:col-span-2">
+                        <input type="text" id="f-motorista-busca"
+                            oninput="onInputMotoristaFrota(this.value)"
+                            onfocus="buscarColaboradores(this.value, 'frota')"
+                            placeholder="Buscar colaborador (motorista) no banco *" required autocomplete="off"
+                            class="border p-2 rounded w-full">
+                        <input type="hidden" id="f-motorista">
+                        <div id="sugestoes-colab-frota"
+                            class="hidden absolute z-20 left-0 right-0 bg-white border border-slate-300 rounded shadow-md mt-1 max-h-48 overflow-y-auto">
+                        </div>
+                    </div>
+
+                    <div>
+                        <input type="time" id="f-hora-frota" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
+                        <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+                    </div>
+                    <input type="number" id="f-km" placeholder="KM Inicial" class="border p-2 rounded sm:col-span-2">
+                </div>
+
+                <!-- Campos quando selecionado VISITANTE / PRESTADORA -->
+                <div id="campos-frota-visitante" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-3 items-start">
+                    <input type="text" id="fv-motorista" placeholder="Nome do Motorista *" class="border p-2 rounded">
+                    <input type="text" id="fv-doc" placeholder="RG ou CPF *" class="border p-2 rounded">
+                    <input type="text" id="fv-placa" placeholder="Placa do Veículo *" class="border p-2 rounded uppercase">
+                    <input type="text" id="fv-modelo" placeholder="Modelo do Veículo" class="border p-2 rounded">
+                    <input type="text" id="fv-empresa" placeholder="Empresa" class="border p-2 rounded">
+                    <div>
+                        <input type="text" id="fv-destino" placeholder="Destino" class="border p-2 rounded w-full">
+                    </div>
+                    <div>
+                        <input type="time" id="f-hora-vis" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
+                        <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" id="btn-submit-frota"
+                        class="inline-flex items-center justify-center gap-2 bg-blue-700 text-white font-semibold py-2 px-5 rounded hover:bg-blue-800">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 11l1.5-4.5A2 2 0 018.4 5h7.2a2 2 0 011.9 1.5L19 11m-14 0h14m-14 0v6a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-6M7.5 14h.01M16.5 14h.01" />
+                        </svg>
+                        <span>Registrar Saída</span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="bg-white rounded-lg shadow-sm border overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 border-b text-slate-600">
+                        <tr>
+                            <th class="p-3">Hora</th>
+                            <th class="p-3">Veículo</th>
+                            <th class="p-3">Motorista / Doc / Empresa</th>
+                            <th class="p-3">KM (Ini/Fim)</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tb-frotas" class="divide-y"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 3. ENCOMENDAS -->
+        <section id="sec-encomendas" class="tela no-print hidden space-y-5">
+            <form onsubmit="addEncomenda(event)" class="bg-white p-4 rounded-lg shadow-sm border grid grid-cols-1 sm:grid-cols-5 gap-3">
+                <input type="text" id="e-dest" placeholder="Destinatário *" required class="border p-2 rounded">
+                <input type="text" id="e-rem" placeholder="Remetente *" required class="border p-2 rounded">
+                <input type="text" id="e-vol" placeholder="Volume / NF" class="border p-2 rounded">
+                <div>
+                    <input type="time" id="e-hora" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
+                    <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+                </div>
+                <button type="submit"
+                    class="inline-flex items-center justify-center gap-2 bg-emerald-700 text-white font-semibold py-2 px-4 rounded hover:bg-emerald-800 self-start">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Registrar Encomenda</span>
+                </button>
+            </form>
+
+            <div class="bg-white rounded-lg shadow-sm border overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 border-b text-slate-600">
+                        <tr>
+                            <th class="p-3">Hora</th>
+                            <th class="p-3">Destinatário</th>
+                            <th class="p-3">Remetente / Vol</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tb-encomendas" class="divide-y"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 4. RELATÓRIOS -->
+        <section id="sec-relatorios" class="tela hidden space-y-5">
+            <div class="no-print bg-white p-4 rounded-lg shadow-sm border flex flex-wrap items-end gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Módulo</label>
+                    <select id="rel-modulo" onchange="loadRelatorio()" class="border p-2 rounded text-sm">
+                        <option value="todos">Todos</option>
+                        <option value="pedestres">Pedestres</option>
+                        <option value="frotas">Frotas</option>
+                        <option value="encomendas">Encomendas</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Data Início</label>
+                    <input type="date" id="rel-inicio" onchange="loadRelatorio()" class="border p-2 rounded text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Data Fim</label>
+                    <input type="date" id="rel-fim" onchange="loadRelatorio()" class="border p-2 rounded text-sm">
+                </div>
+                <button type="button" onclick="loadRelatorio()"
+                    class="bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold px-4 py-2 rounded">
+                    Filtrar
+                </button>
+                <button type="button" onclick="gerarPdfRelatorio()"
+                    class="inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    <span>Gerar PDF</span>
+                </button>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border p-4 space-y-3">
+                <div class="flex flex-wrap justify-between items-center border-b pb-2">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">Relatório de Movimentações — Portaria</h2>
+                        <p id="rel-subtitulo" class="text-xs text-slate-500">Todos os registros</p>
+                    </div>
+                    <span id="rel-emitido-por" class="text-xs text-slate-600"></span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b text-slate-600">
+                            <tr>
+                                <th class="p-3">Data/Hora</th>
+                                <th class="p-3">Módulo</th>
+                                <th class="p-3">Descrição</th>
+                                <th class="p-3">Detalhes</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3">Registrado Por</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-relatorios" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let tipoPedestreAtual = 'Visitante';
+        let tipoFrotaAtual = 'FROTA';
+        let veiculoFrotaSelecionadoId = null;
+
+        const fmtHora = (d) => d ? new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-';
+        const fmtDataHora = (d) => d ? new Date(d).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+
+        function getVigilanteAtual() {
+            try {
+                return JSON.parse(localStorage.getItem('portaria_vigilante') || 'null');
+            } catch {
+                return null;
+            }
+        }
+
+        function getNomeVigilante() {
+            const vig = getVigilanteAtual();
+            return (vig && (vig.nome || vig.usuario)) || 'Não informado';
+        }
+
+        function atualizarInterfaceVigilante() {
+            const vig = getVigilanteAtual();
+            const telaLogin = document.getElementById('tela-login');
+            const badge = document.getElementById('vigilante-logado');
+            if (vig && (vig.nome || vig.usuario)) {
+                telaLogin.classList.add('hidden');
+                badge.innerText = vig.nome || vig.usuario;
+            } else {
+                telaLogin.classList.remove('hidden');
+                badge.innerText = '-';
+            }
+        }
+
+        async function fazerLogin(e) {
+            e.preventDefault();
+            const usuario = document.getElementById('login-usuario').value;
+            const senha = document.getElementById('login-senha').value;
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario, senha })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.vigilante) {
+                return alert(data.error || 'Usuário ou senha inválidos.');
+            }
+            localStorage.setItem('portaria_vigilante', JSON.stringify(data.vigilante));
+            e.target.reset();
+            atualizarInterfaceVigilante();
+            carregarTudo();
+        }
+
+        function sairSistema() {
+            localStorage.removeItem('portaria_vigilante');
+            atualizarInterfaceVigilante();
+        }
+
+        function montarDataManual(horaStr) {
+            if (!horaStr) return null;
+            const [hh, mm] = horaStr.split(':').map(Number);
+            if (Number.isNaN(hh) || Number.isNaN(mm)) return null;
+            const agora = new Date();
+            agora.setHours(hh, mm, 0, 0);
+            return agora.toISOString();
+        }
+
+        function toggleBoxCadastro(id) {
+            document.getElementById(id).classList.toggle('hidden');
+        }
+
+        function selecionarAba(nome, inputId) {
+            document.querySelectorAll('.tela').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`sec-${nome}`).classList.remove('hidden');
+            document.querySelectorAll('.aba').forEach(b => {
+                b.classList.remove('border-b-2', 'border-slate-900', 'text-slate-900');
+                b.classList.add('text-slate-500');
+            });
+            const ativo = document.getElementById(`btn-${nome}`);
+            ativo.classList.add('border-b-2', 'border-slate-900', 'text-slate-900');
+            ativo.classList.remove('text-slate-500');
+
+            if (nome === 'relatorios') {
+                loadRelatorio();
+                return;
+            }
+
+            let focoId = inputId;
+            if (nome === 'pedestres') {
+                focoId = tipoPedestreAtual === 'Colaborador' ? 'p-busca-colab' : 'p-nome';
+            } else if (nome === 'frotas') {
+                focoId = tipoFrotaAtual === 'VISITANTE' ? 'fv-motorista' : 'f-busca';
+            }
+
+            if (focoId) {
+                requestAnimationFrame(() => {
+                    const el = document.getElementById(focoId);
+                    if (el) el.focus();
+                });
+            }
+        }
+
+        // ================= COLABORADORES (PEDESTRES & MOTORISTA FROTA) =================
+        async function buscarColaboradores(termo, contexto) {
+            const boxId = contexto === 'frota' ? 'sugestoes-colab-frota' : 'sugestoes-colab-pedestre';
+            const box = document.getElementById(boxId);
+            const res = await fetch(`/api/colaboradores?q=${encodeURIComponent((termo || '').trim())}`);
+            const lista = await res.json().catch(() => []);
+
+            if (!Array.isArray(lista) || !lista.length) {
+                box.innerHTML = '<div class="p-2 text-xs text-slate-500">Nenhum colaborador encontrado no banco</div>';
+                box.classList.remove('hidden');
+                return;
+            }
+
+            box.innerHTML = lista.map(c => {
+                const nomeSafe = (c.nome || '').replace(/'/g, "\\'");
+                const deptoSafe = (c.departamento || '').replace(/'/g, "\\'");
+                const handler = contexto === 'frota'
+                    ? `selecionarMotoristaFrota('${nomeSafe}')`
+                    : `selecionarColaborador('${nomeSafe}', '${deptoSafe}')`;
+
+                return `
+                    <button type="button" onclick="${handler}"
+                        class="w-full text-left px-3 py-2 text-xs hover:bg-slate-100 border-b last:border-b-0">
+                        <span class="font-semibold block text-slate-800">${c.nome}</span>
+                        <span class="text-slate-500">${c.departamento || 'Sem departamento'}${c.matricula ? ' • Mat: ' + c.matricula : ''}</span>
+                    </button>
+                `;
+            }).join('');
+            box.classList.remove('hidden');
+        }
+
+        function selecionarColaborador(nome, departamento) {
+            document.getElementById('p-colab-nome').value = nome;
+            document.getElementById('p-colab-depto').value = departamento || '';
+            document.getElementById('p-busca-colab').value = nome;
+            document.getElementById('sugestoes-colab-pedestre').classList.add('hidden');
+        }
+
+        function onInputMotoristaFrota(valor) {
+            document.getElementById('f-motorista').value = '';
+            buscarColaboradores(valor, 'frota');
+        }
+
+        function selecionarMotoristaFrota(nome) {
+            document.getElementById('f-motorista').value = nome;
+            document.getElementById('f-motorista-busca').value = nome;
+            document.getElementById('sugestoes-colab-frota').classList.add('hidden');
+        }
+
+        // ================= PEDESTRES =================
+        function setTipoPedestre(tipo) {
+            tipoPedestreAtual = tipo;
+            const ehColab = tipo === 'Colaborador';
+
+            document.getElementById('tipo-btn-visitante').className = ehColab
+                ? 'px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition'
+                : 'px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-slate-900 text-white transition';
+
+            document.getElementById('tipo-btn-colaborador').className = ehColab
+                ? 'px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-slate-900 text-white transition'
+                : 'px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
+
+            document.getElementById('campos-visitante').classList.toggle('hidden', ehColab);
+            document.getElementById('campos-colaborador').classList.toggle('hidden', !ehColab);
+
+            document.getElementById('p-nome').required = !ehColab;
+            document.getElementById('p-doc').required = !ehColab;
+            document.getElementById('p-destino').required = !ehColab;
+            document.getElementById('p-resp').required = !ehColab;
+            document.getElementById('p-colab-nome').required = ehColab;
+
+            if (ehColab) {
+                document.getElementById('p-busca-colab').focus();
+            } else {
+                document.getElementById('sugestoes-colab-pedestre').classList.add('hidden');
+                document.getElementById('p-nome').focus();
+            }
+        }
+
+        async function salvarNovoColaborador() {
+            const nome = document.getElementById('cad-c-nome').value.trim();
+            const departamento = document.getElementById('cad-c-depto').value.trim();
+            const matricula = document.getElementById('cad-c-mat').value.trim();
+
+            if (!nome) {
+                return alert('Informe o nome completo do colaborador.');
+            }
+
+            const res = await fetch('/api/colaboradores', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome, departamento, matricula })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                return alert(err.error || 'Erro ao cadastrar colaborador.');
+            }
+
+            document.getElementById('cad-c-nome').value = '';
+            document.getElementById('cad-c-depto').value = '';
+            document.getElementById('cad-c-mat').value = '';
+            document.getElementById('box-cad-colab').classList.add('hidden');
+            setTipoPedestre('Colaborador');
+            selecionarColaborador(nome, departamento);
+            alert('Colaborador salvo no banco e selecionado.');
+        }
+
+        async function loadPedestres() {
+            const dados = await (await fetch('/api/pedestres')).json().catch(() => []);
+            document.getElementById('cnt-ped').innerText = dados.filter(x => x.status === 'NO_LOCAL').length;
+            document.getElementById('tb-pedestres').innerHTML = dados.map(p => {
+                const infoExtra = [
+                    p.tipo || null,
+                    p.documento || null,
+                    p.destino || null,
+                    p.responsavel ? `Resp: ${p.responsavel}` : null,
+                    p.departamento || null
+                ].filter(Boolean).join(' • ');
+
+                return `
+                    <tr>
+                        <td class="p-3">${fmtHora(p.data_entrada)}</td>
+                        <td class="p-3 font-medium">${p.nome}</td>
+                        <td class="p-3 text-slate-500">${infoExtra || '-'}</td>
+                        <td class="p-3">${p.status === 'NO_LOCAL' ? '<span class="px-2 py-0.5 text-xs bg-amber-100 text-amber-800 rounded">No Local</span>' : '<span class="px-2 py-0.5 text-xs bg-slate-200 rounded">Saiu</span>'}</td>
+                        <td class="p-3 text-right">${p.status === 'NO_LOCAL' ? `<button onclick="sairPedestre(${p.id})" class="bg-slate-800 text-white px-2.5 py-1 rounded text-xs">Saída</button>` : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function addPedestre(e) {
+            e.preventDefault();
+            const ehColab = tipoPedestreAtual === 'Colaborador';
+            const horaVal = ehColab
+                ? document.getElementById('p-hora-colab').value
+                : document.getElementById('p-hora-vis').value;
+            const dataManual = montarDataManual(horaVal);
+
+            const payload = ehColab
+                ? {
+                    tipo: 'Colaborador',
+                    nome: document.getElementById('p-colab-nome').value.trim(),
+                    departamento: document.getElementById('p-colab-depto').value.trim() || null,
+                    documento: null,
+                    destino: null,
+                    responsavel: null,
+                    registrado_por: getNomeVigilante(),
+                    ...(dataManual ? { data_entrada: dataManual } : {})
+                }
+                : {
+                    tipo: 'Visitante',
+                    nome: document.getElementById('p-nome').value.trim(),
+                    documento: document.getElementById('p-doc').value.trim(),
+                    destino: document.getElementById('p-destino').value.trim(),
+                    responsavel: document.getElementById('p-resp').value.trim(),
+                    departamento: null,
+                    registrado_por: getNomeVigilante(),
+                    ...(dataManual ? { data_entrada: dataManual } : {})
+                };
+
+            if (!payload.nome) {
+                alert(ehColab ? 'Selecione um colaborador da lista.' : 'Informe o nome completo.');
+                return;
+            }
+
+            const res = await fetch('/api/pedestres', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                return alert(err.error || 'Erro ao registrar entrada.');
+            }
+
+            e.target.reset();
+            document.getElementById('p-colab-nome').value = '';
+            document.getElementById('p-colab-depto').value = '';
+            setTipoPedestre(tipoPedestreAtual);
+            loadPedestres();
+        }
+
+        async function sairPedestre(id) {
+            await fetch(`/api/pedestres/${id}/saida`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ finalizado_por: getNomeVigilante() })
+            });
+            loadPedestres();
+        }
+
+        // ================= FROTAS =================
+        function setTipoFrota(tipo) {
+            tipoFrotaAtual = tipo;
+            const ehFrota = tipo === 'FROTA';
+
+            document.getElementById('frota-btn-frota').className = ehFrota
+                ? 'px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-blue-700 text-white transition'
+                : 'px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
+
+            document.getElementById('frota-btn-visitante').className = !ehFrota
+                ? 'px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-blue-700 text-white transition'
+                : 'px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
+
+            document.getElementById('campos-frota-propria').classList.toggle('hidden', !ehFrota);
+            document.getElementById('campos-frota-visitante').classList.toggle('hidden', ehFrota);
+
+            document.getElementById('f-placa').required = ehFrota;
+            document.getElementById('f-modelo').required = ehFrota;
+            document.getElementById('f-motorista-busca').required = ehFrota;
+
+            document.getElementById('fv-motorista').required = !ehFrota;
+            document.getElementById('fv-doc').required = !ehFrota;
+            document.getElementById('fv-placa').required = !ehFrota;
+
+            document.getElementById('btn-submit-frota').querySelector('span').innerText = ehFrota
+                ? 'Registrar Saída'
+                : 'Registrar Entrada';
+
+            if (ehFrota) {
+                document.getElementById('f-busca').focus();
+            } else {
+                document.getElementById('sugestoes-frota').classList.add('hidden');
+                document.getElementById('sugestoes-colab-frota').classList.add('hidden');
+                document.getElementById('fv-motorista').focus();
+            }
+        }
+
+        async function salvarNovaFrota() {
+            const placa = document.getElementById('cad-f-placa').value.trim().toUpperCase();
+            const modelo = document.getElementById('cad-f-modelo').value.trim();
+            const km_atual = document.getElementById('cad-f-km').value.trim();
+
+            if (!placa || !modelo) {
+                return alert('Informe placa e modelo do veículo.');
+            }
+
+            const res = await fetch('/api/frotas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ placa, modelo, km_atual: km_atual || null })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                return alert(err.error || 'Erro ao cadastrar veículo da frota.');
+            }
+
+            document.getElementById('cad-f-placa').value = '';
+            document.getElementById('cad-f-modelo').value = '';
+            document.getElementById('cad-f-km').value = '';
+            document.getElementById('box-cad-frota').classList.add('hidden');
+            setTipoFrota('FROTA');
+            selecionarCarroFrota(null, placa, modelo, km_atual || null);
+            alert('Veículo da frota salvo no banco e selecionado.');
+        }
+
+        async function buscarFrotas(termo) {
+            const box = document.getElementById('sugestoes-frota');
+            const res = await fetch(`/api/frotas?q=${encodeURIComponent((termo || '').trim())}`);
+            const lista = await res.json().catch(() => []);
+
+            if (!Array.isArray(lista) || !lista.length) {
+                box.innerHTML = '<div class="p-2 text-xs text-slate-500">Nenhum veículo da frota encontrado no banco</div>';
+                box.classList.remove('hidden');
+                return;
+            }
+
+            box.innerHTML = lista.map(f => `
+                <button type="button" onclick="selecionarCarroFrota(${f.id}, '${(f.placa || '').replace(/'/g, "\\'")}', '${(f.modelo || '').replace(/'/g, "\\'")}', ${f.km_atual ?? 'null'})"
+                    class="w-full text-left px-3 py-2 text-xs hover:bg-slate-100 border-b last:border-b-0 flex justify-between items-center">
+                    <div>
+                        <span class="font-bold text-slate-800">${f.placa}</span>
+                        <span class="text-slate-600 ml-1">${f.modelo}</span>
+                    </div>
+                    <span class="text-slate-500">${f.km_atual !== null && f.km_atual !== undefined ? 'KM: ' + f.km_atual : ''}</span>
+                </button>
+            `).join('');
+            box.classList.remove('hidden');
+        }
+
+        function selecionarCarroFrota(id, placa, modelo, kmAtual) {
+            veiculoFrotaSelecionadoId = id;
+            document.getElementById('f-busca').value = `${placa} - ${modelo}`;
+            document.getElementById('f-placa').value = placa;
+            document.getElementById('f-modelo').value = modelo;
+            if (kmAtual !== null && kmAtual !== undefined && kmAtual !== '') {
+                document.getElementById('f-km').value = kmAtual;
+            }
+            document.getElementById('sugestoes-frota').classList.add('hidden');
+        }
+
+        async function loadFrotas() {
+            const dados = await (await fetch('/api/veiculos')).json().catch(() => []);
+            document.getElementById('cnt-fro').innerText = dados.filter(x => x.status !== 'FINALIZADO').length;
+            document.getElementById('tb-frotas').innerHTML = dados.map(v => {
+                const motInfo = [
+                    v.motorista || '-',
+                    v.documento ? `Doc: ${v.documento}` : null,
+                    v.empresa || null,
+                    v.destino_origem ? `Dest: ${v.destino_origem}` : null
+                ].filter(Boolean).join(' • ');
+
+                return `
+                    <tr>
+                        <td class="p-3">${fmtHora(v.data_entrada_saida)}</td>
+                        <td class="p-3 font-bold">${v.placa} <span class="font-normal text-slate-600">- ${v.modelo || '-'}</span></td>
+                        <td class="p-3 text-slate-600">${motInfo}</td>
+                        <td class="p-3">${v.km_inicial || '-'} / ${v.km_final || '-'}</td>
+                        <td class="p-3">${v.status !== 'FINALIZADO' ? '<span class="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded">Ativo</span>' : '<span class="px-2 py-0.5 text-xs bg-slate-200 rounded">Finalizado</span>'}</td>
+                        <td class="p-3 text-right">${v.status !== 'FINALIZADO' ? `<button onclick="retornarFrota(${v.id}, '${v.tipo_operacao}')" class="bg-blue-700 text-white px-2.5 py-1 rounded text-xs">Finalizar</button>` : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function addFrota(e) {
+            e.preventDefault();
+            const ehFrota = tipoFrotaAtual === 'FROTA';
+
+            if (ehFrota) {
+                const dataManual = montarDataManual(document.getElementById('f-hora-frota').value);
+                const placa = document.getElementById('f-placa').value.trim().toUpperCase();
+                const modelo = document.getElementById('f-modelo').value.trim();
+                const motorista = document.getElementById('f-motorista').value.trim();
+
+                if (!placa || !modelo) {
+                    return alert('Selecione um veículo da frota no banco.');
+                }
+                if (!motorista) {
+                    return alert('Selecione um colaborador cadastrado no banco como motorista da frota.');
+                }
+
+                await fetch('/api/veiculos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tipo_operacao: 'FROTA_SAIDA',
+                        veiculo_frota_id: veiculoFrotaSelecionadoId,
+                        placa,
+                        modelo,
+                        motorista,
+                        km_inicial: document.getElementById('f-km').value,
+                        registrado_por: getNomeVigilante(),
+                        ...(dataManual ? { data_entrada_saida: dataManual } : {})
+                    })
+                });
+            } else {
+                const dataManual = montarDataManual(document.getElementById('f-hora-vis').value);
+                const motorista = document.getElementById('fv-motorista').value.trim();
+                const documento = document.getElementById('fv-doc').value.trim();
+                const placa = document.getElementById('fv-placa').value.trim().toUpperCase();
+
+                if (!motorista || !documento || !placa) {
+                    return alert('Nome do motorista, RG ou CPF e placa do veículo são obrigatórios.');
+                }
+
+                await fetch('/api/veiculos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tipo_operacao: 'VISITANTE_ENTRADA',
+                        motorista,
+                        documento,
+                        placa,
+                        modelo: document.getElementById('fv-modelo').value.trim() || 'Não informado',
+                        empresa: document.getElementById('fv-empresa').value.trim() || null,
+                        destino_origem: document.getElementById('fv-destino').value.trim() || null,
+                        registrado_por: getNomeVigilante(),
+                        ...(dataManual ? { data_entrada_saida: dataManual } : {})
+                    })
+                });
+            }
+
+            veiculoFrotaSelecionadoId = null;
+            document.getElementById('f-motorista').value = '';
+            e.target.reset();
+            setTipoFrota(tipoFrotaAtual);
+            loadFrotas();
+        }
+
+        async function retornarFrota(id, operacao) {
+            let km_final = null;
+            if (operacao === 'FROTA_SAIDA') {
+                km_final = prompt('KM Final (opcional):');
+                if (km_final === null) return;
+            }
+            await fetch(`/api/veiculos/${id}/finalizar`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ km_final, finalizado_por: getNomeVigilante() })
+            });
+            loadFrotas();
+        }
+
+        // ================= ENCOMENDAS =================
+        async function loadEncomendas() {
+            const dados = await (await fetch('/api/encomendas')).json().catch(() => []);
+            document.getElementById('cnt-enc').innerText = dados.filter(x => x.status === 'AGUARDANDO_RETIRADA').length;
+            document.getElementById('tb-encomendas').innerHTML = dados.map(enc => `
+                <tr>
+                    <td class="p-3">${fmtHora(enc.data_chegada)}</td>
+                    <td class="p-3 font-medium">${enc.destinatario}</td>
+                    <td class="p-3 text-slate-500">${enc.remetente} • ${enc.tipo_volume || '-'}</td>
+                    <td class="p-3">${enc.status === 'AGUARDANDO_RETIRADA' ? '<span class="px-2 py-0.5 text-xs bg-emerald-100 text-emerald-800 rounded">Pendente</span>' : '<span class="px-2 py-0.5 text-xs bg-slate-200 rounded">Entregue</span>'}</td>
+                    <td class="p-3 text-right">${enc.status === 'AGUARDANDO_RETIRADA' ? `<button onclick="entregarEnc(${enc.id})" class="bg-emerald-700 text-white px-2.5 py-1 rounded text-xs">Entregar</button>` : '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function addEncomenda(e) {
+            e.preventDefault();
+            const dataManual = montarDataManual(document.getElementById('e-hora').value);
+            await fetch('/api/encomendas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    destinatario: document.getElementById('e-dest').value,
+                    remetente: document.getElementById('e-rem').value,
+                    tipo_volume: document.getElementById('e-vol').value || 'Caixa',
+                    registrado_por: getNomeVigilante(),
+                    ...(dataManual ? { data_chegada: dataManual } : {})
+                })
+            });
+            e.target.reset();
+            loadEncomendas();
+        }
+
+        async function entregarEnc(id) {
+            const retirado_por = prompt('Quem retirou?');
+            if (!retirado_por) return;
+            await fetch(`/api/encomendas/${id}/entregar`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ retirado_por, entregue_por: getNomeVigilante() })
+            });
+            loadEncomendas();
+        }
+
+        // ================= RELATÓRIOS & PDF =================
+        async function loadRelatorio() {
+            const modulo = document.getElementById('rel-modulo').value;
+            const inicio = document.getElementById('rel-inicio').value;
+            const fim = document.getElementById('rel-fim').value;
+
+            const [ped, fro, enc] = await Promise.all([
+                fetch('/api/pedestres').then(r => r.json()).catch(() => []),
+                fetch('/api/veiculos').then(r => r.json()).catch(() => []),
+                fetch('/api/encomendas').then(r => r.json()).catch(() => [])
+            ]);
+
+            let linhas = [];
+
+            if (modulo === 'todos' || modulo === 'pedestres') {
+                (Array.isArray(ped) ? ped : []).forEach(p => {
+                    linhas.push({
+                        data: p.data_entrada,
+                        modulo: 'Pedestres',
+                        descricao: p.nome,
+                        detalhe: [p.tipo, p.documento, p.destino, p.responsavel ? `Resp: ${p.responsavel}` : null, p.departamento].filter(Boolean).join(' • ') || '-',
+                        status: p.status === 'NO_LOCAL' ? 'No Local' : 'Saiu',
+                        registrado_por: p.registrado_por || '-'
+                    });
+                });
+            }
+
+            if (modulo === 'todos' || modulo === 'frotas') {
+                (Array.isArray(fro) ? fro : []).forEach(v => {
+                    linhas.push({
+                        data: v.data_entrada_saida,
+                        modulo: 'Frotas',
+                        descricao: `${v.placa} - ${v.modelo || ''}`,
+                        detalhe: [v.motorista, v.documento ? `Doc: ${v.documento}` : null, v.empresa, v.destino_origem].filter(Boolean).join(' • ') || '-',
+                        status: v.status !== 'FINALIZADO' ? 'Ativo' : 'Finalizado',
+                        registrado_por: v.registrado_por || '-'
+                    });
+                });
+            }
+
+            if (modulo === 'todos' || modulo === 'encomendas') {
+                (Array.isArray(enc) ? enc : []).forEach(e => {
+                    linhas.push({
+                        data: e.data_chegada,
+                        modulo: 'Encomendas',
+                        descricao: e.destinatario,
+                        detalhe: `${e.remetente} • ${e.tipo_volume || '-'}${e.retirado_por ? ' • Retirado por: ' + e.retirado_por : ''}`,
+                        status: e.status === 'AGUARDANDO_RETIRADA' ? 'Pendente' : 'Entregue',
+                        registrado_por: e.registrado_por || '-'
+                    });
+                });
+            }
+
+            if (inicio) {
+                const dtIni = new Date(`${inicio}T00:00:00`);
+                linhas = linhas.filter(l => l.data && new Date(l.data) >= dtIni);
+            }
+            if (fim) {
+                const dtFim = new Date(`${fim}T23:59:59`);
+                linhas = linhas.filter(l => l.data && new Date(l.data) <= dtFim);
+            }
+
+            linhas.sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
+
+            const textoModulo = document.getElementById('rel-modulo').selectedOptions[0].text;
+            const periodoTexto = (inicio || fim) ? ` • Período: ${inicio || '...'} até ${fim || '...'}` : '';
+            document.getElementById('rel-subtitulo').innerText = `Módulo: ${textoModulo}${periodoTexto} • Total: ${linhas.length}`;
+            document.getElementById('rel-emitido-por').innerText = `Emitido por: ${getNomeVigilante()} • ${new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`;
+
+            document.getElementById('tb-relatorios').innerHTML = linhas.map(r => `
+                <tr>
+                    <td class="p-3">${fmtDataHora(r.data)}</td>
+                    <td class="p-3 font-medium">${r.modulo}</td>
+                    <td class="p-3 font-semibold">${r.descricao}</td>
+                    <td class="p-3 text-slate-600">${r.detalhe}</td>
+                    <td class="p-3">${r.status}</td>
+                    <td class="p-3 text-slate-600">${r.registrado_por}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum registro encontrado</td></tr>';
+        }
+
+        function gerarPdfRelatorio() {
+            loadRelatorio();
+            requestAnimationFrame(() => window.print());
+        }
+
+        async function carregarTudo() {
+            await Promise.all([
+                loadPedestres(),
+                loadFrotas(),
+                loadEncomendas(),
+                loadRelatorio()
+            ]);
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#p-busca-colab') && !e.target.closest('#sugestoes-colab-pedestre')) {
+                document.getElementById('sugestoes-colab-pedestre').classList.add('hidden');
+            }
+            if (!e.target.closest('#f-motorista-busca') && !e.target.closest('#sugestoes-colab-frota')) {
+                document.getElementById('sugestoes-colab-frota').classList.add('hidden');
+            }
+            if (!e.target.closest('#f-busca') && !e.target.closest('#sugestoes-frota')) {
+                document.getElementById('sugestoes-frota').classList.add('hidden');
+            }
+        });
+
+        atualizarInterfaceVigilante();
+        setTipoPedestre('Visitante');
+        setTipoFrota('FROTA');
+        carregarTudo();
+    </script>
+</body>
+
+</html>
