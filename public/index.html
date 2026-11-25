@@ -51,7 +51,7 @@
 
     <header class="no-print bg-slate-900 text-white shadow">
         <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-            <h1 class="text-lg font-bold">Portaria — Registro Rápido</h1>
+            <h1 class="text-lg font-bold">SISTEMA PORTARIA — POLO SEGURANÇA</h1>
             <div class="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm">
                 <span class="bg-slate-800 px-3 py-1 rounded">Pedestres: <strong id="cnt-ped" class="text-amber-400">0</strong></span>
                 <span class="bg-slate-800 px-3 py-1 rounded">Frotas: <strong id="cnt-fro" class="text-blue-400">0</strong></span>
@@ -95,6 +95,14 @@
                 <span>Encomendas</span>
             </button>
 
+            <button type="button" onclick="selecionarAba('cadastros', 'cad-c-nome')" id="btn-cadastros"
+                class="aba inline-flex items-center gap-2 px-4 py-2 font-semibold text-slate-500 hover:text-slate-800">
+                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                <span>Cadastros</span>
+            </button>
+
             <button type="button" onclick="selecionarAba('relatorios')" id="btn-relatorios"
                 class="aba inline-flex items-center gap-2 px-4 py-2 font-semibold text-slate-500 hover:text-slate-800">
                 <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -104,7 +112,7 @@
             </button>
         </div>
 
-        <!-- 1. PEDESTRES -->
+        <!-- 1. PEDESTRES (REGISTRO DE ENTRADA/SAÍDA) -->
         <section id="sec-pedestres" class="tela no-print space-y-5">
             <form onsubmit="addPedestre(event)" class="bg-white p-4 rounded-lg shadow-sm border space-y-4">
                 <div class="flex flex-wrap items-center justify-between gap-2">
@@ -119,26 +127,10 @@
                         </button>
                     </div>
 
-                    <button type="button" onclick="toggleBoxCadastro('box-cad-colab')"
-                        class="text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition">
-                        + Cadastrar Colaborador no Banco
+                    <button type="button" onclick="selecionarAba('cadastros', 'cad-c-nome')"
+                        class="text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition">
+                        Gerenciar Colaboradores na Aba Cadastros
                     </button>
-                </div>
-
-                <!-- Cadastro rápido de Colaborador direto no banco -->
-                <div id="box-cad-colab" class="hidden bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
-                    <div class="text-xs font-bold text-slate-700">Novo Colaborador (salvo direto no banco)</div>
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                        <input type="text" id="cad-c-nome" placeholder="Nome completo *" class="border p-2 rounded bg-white text-sm sm:col-span-2">
-                        <input type="text" id="cad-c-depto" placeholder="Departamento" class="border p-2 rounded bg-white text-sm">
-                        <div class="flex gap-2">
-                            <input type="text" id="cad-c-mat" placeholder="Matrícula" class="border p-2 rounded bg-white text-sm w-full">
-                            <button type="button" onclick="salvarNovoColaborador()"
-                                class="bg-slate-900 text-white text-xs font-semibold px-3 rounded hover:bg-slate-800 shrink-0">
-                                Salvar
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Campos Visitante -->
@@ -157,7 +149,7 @@
                 <div id="campos-colaborador" class="hidden grid grid-cols-1 sm:grid-cols-4 gap-3 items-start">
                     <div class="relative">
                         <input type="text" id="p-busca-colab" oninput="buscarColaboradores(this.value, 'pedestre')"
-                            onfocus="buscarColaboradores(this.value, 'pedestre')" placeholder="Buscar colaborador no banco *"
+                            onfocus="buscarColaboradores(this.value, 'pedestre')" placeholder="Buscar colaborador cadastrado *"
                             autocomplete="off" class="border p-2 rounded w-full">
                         <div id="sugestoes-colab-pedestre"
                             class="hidden absolute z-20 left-0 right-0 bg-white border border-slate-300 rounded shadow-md mt-1 max-h-48 overflow-y-auto">
@@ -201,7 +193,7 @@
             </div>
         </section>
 
-        <!-- 2. FROTAS -->
+        <!-- 2. FROTAS (REGISTRO DE MOVIMENTAÇÃO) -->
         <section id="sec-frotas" class="tela no-print hidden space-y-5">
             <form onsubmit="addFrota(event)" class="bg-white p-4 rounded-lg shadow-sm border space-y-4">
                 <div class="flex flex-wrap items-center justify-between gap-2">
@@ -216,33 +208,17 @@
                         </button>
                     </div>
 
-                    <button type="button" onclick="toggleBoxCadastro('box-cad-frota')"
-                        class="text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
-                        + Cadastrar Veículo da Frota no Banco
+                    <button type="button" onclick="selecionarAba('cadastros', 'cad-f-placa')"
+                        class="text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition">
+                        Gerenciar Frota na Aba Cadastros
                     </button>
-                </div>
-
-                <!-- Cadastro rápido de Veículo da Frota direto no banco -->
-                <div id="box-cad-frota" class="hidden bg-blue-50/50 p-3 rounded-lg border border-blue-200 space-y-2">
-                    <div class="text-xs font-bold text-blue-900">Novo Veículo da Frota (salvo direto no banco)</div>
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                        <input type="text" id="cad-f-placa" placeholder="Placa *" class="border p-2 rounded bg-white text-sm uppercase">
-                        <input type="text" id="cad-f-modelo" placeholder="Modelo / Cor *" class="border p-2 rounded bg-white text-sm sm:col-span-2">
-                        <div class="flex gap-2">
-                            <input type="number" id="cad-f-km" placeholder="KM Atual" class="border p-2 rounded bg-white text-sm w-full">
-                            <button type="button" onclick="salvarNovaFrota()"
-                                class="bg-blue-700 text-white text-xs font-semibold px-3 rounded hover:bg-blue-800 shrink-0">
-                                Salvar
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Campos quando selecionado FROTA -->
                 <div id="campos-frota-propria" class="grid grid-cols-1 sm:grid-cols-6 gap-3 items-start">
                     <div class="relative sm:col-span-2">
                         <input type="text" id="f-busca" oninput="buscarFrotas(this.value)" onfocus="buscarFrotas(this.value)"
-                            placeholder="Buscar veículo da frota no banco *" autocomplete="off"
+                            placeholder="Buscar veículo da frota cadastrado *" autocomplete="off"
                             class="border p-2 rounded w-full">
                         <div id="sugestoes-frota"
                             class="hidden absolute z-20 left-0 right-0 bg-white border border-slate-300 rounded shadow-md mt-1 max-h-48 overflow-y-auto">
@@ -258,7 +234,7 @@
                         <input type="text" id="f-motorista-busca"
                             oninput="onInputMotoristaFrota(this.value)"
                             onfocus="buscarColaboradores(this.value, 'frota')"
-                            placeholder="Buscar colaborador (motorista) no banco *" required autocomplete="off"
+                            placeholder="Buscar colaborador (motorista) cadastrado *" required autocomplete="off"
                             class="border p-2 rounded w-full">
                         <input type="hidden" id="f-motorista">
                         <div id="sugestoes-colab-frota"
@@ -317,7 +293,7 @@
             </div>
         </section>
 
-        <!-- 3. ENCOMENDAS -->
+        <!-- 3. ENCOMENDAS (REGISTRO DE RECEBIMENTO/ENTREGA) -->
         <section id="sec-encomendas" class="tela no-print hidden space-y-5">
             <form onsubmit="addEncomenda(event)" class="bg-white p-4 rounded-lg shadow-sm border grid grid-cols-1 sm:grid-cols-5 gap-3">
                 <input type="text" id="e-dest" placeholder="Destinatário *" required class="border p-2 rounded">
@@ -352,7 +328,124 @@
             </div>
         </section>
 
-        <!-- 4. RELATÓRIOS -->
+        <!-- 4. CADASTROS (COLABORADORES, VEÍCULOS DA FROTA & PORTEIROS/ADMIN) -->
+        <section id="sec-cadastros" class="tela no-print hidden space-y-6">
+            <!-- Sub-seção A: Cadastro de Colaboradores -->
+            <div class="bg-white p-4 rounded-lg shadow-sm border space-y-4">
+                <div class="flex flex-wrap justify-between items-center border-b pb-2">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">Cadastro de Colaboradores</h2>
+                        <p class="text-xs text-slate-500">Cadastre funcionários para seleção rápida em Pedestres e como Motorista de Frota</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <input type="text" id="cad-c-nome" placeholder="Nome completo *" class="border p-2 rounded text-sm sm:col-span-2">
+                    <input type="text" id="cad-c-depto" placeholder="Departamento" class="border p-2 rounded text-sm">
+                    <div class="flex gap-2">
+                        <input type="text" id="cad-c-mat" placeholder="Matrícula" class="border p-2 rounded text-sm w-full">
+                        <button type="button" onclick="salvarNovoColaborador()"
+                            class="bg-slate-900 text-white text-xs font-semibold px-4 rounded hover:bg-slate-800 shrink-0">
+                            Salvar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b text-slate-600">
+                            <tr>
+                                <th class="p-2.5">Nome</th>
+                                <th class="p-2.5">Departamento</th>
+                                <th class="p-2.5">Matrícula</th>
+                                <th class="p-2.5 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-cad-colaboradores" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sub-seção B: Cadastro de Veículos da Frota -->
+            <div class="bg-white p-4 rounded-lg shadow-sm border space-y-4">
+                <div class="flex flex-wrap justify-between items-center border-b pb-2">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">Cadastro de Veículos da Frota</h2>
+                        <p class="text-xs text-slate-500">Cadastre veículos próprios da empresa para registrar saídas e retornos na aba Frotas</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <input type="text" id="cad-f-placa" placeholder="Placa *" class="border p-2 rounded text-sm uppercase">
+                    <input type="text" id="cad-f-modelo" placeholder="Modelo / Cor *" class="border p-2 rounded text-sm sm:col-span-2">
+                    <div class="flex gap-2">
+                        <input type="number" id="cad-f-km" placeholder="KM Atual" class="border p-2 rounded text-sm w-full">
+                        <button type="button" onclick="salvarNovaFrota()"
+                            class="bg-blue-700 text-white text-xs font-semibold px-4 rounded hover:bg-blue-800 shrink-0">
+                            Salvar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b text-slate-600">
+                            <tr>
+                                <th class="p-2.5">Placa</th>
+                                <th class="p-2.5">Modelo</th>
+                                <th class="p-2.5">KM Atual</th>
+                                <th class="p-2.5 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-cad-frotas" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sub-seção C: Cadastro de Porteiros / Vigilantes (EXCLUSIVO ADMIN) -->
+            <div id="box-admin-vigilantes" class="hidden bg-white p-4 rounded-lg shadow-sm border border-amber-300 space-y-4">
+                <div class="flex flex-wrap justify-between items-center border-b pb-2">
+                    <div>
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded mb-1">
+                            Restrito ao Administrador
+                        </span>
+                        <h2 class="text-base font-bold text-slate-900">Cadastro de Porteiros / Vigilantes</h2>
+                        <p class="text-xs text-slate-500">Crie ou remova usuários de acesso ao sistema</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                    <input type="text" id="cad-v-nome" placeholder="Nome do porteiro *" class="border p-2 rounded text-sm">
+                    <input type="text" id="cad-v-usuario" placeholder="Usuário de login *" class="border p-2 rounded text-sm">
+                    <input type="password" id="cad-v-senha" placeholder="Senha *" class="border p-2 rounded text-sm">
+                    <select id="cad-v-perfil" class="border p-2 rounded text-sm bg-white">
+                        <option value="VIGILANTE">VIGILANTE</option>
+                        <option value="ADMIN">ADMIN</option>
+                    </select>
+                    <button type="button" onclick="salvarNovoVigilante()"
+                        class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold px-4 py-2 rounded">
+                        Cadastrar Porteiro
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b text-slate-600">
+                            <tr>
+                                <th class="p-2.5">Nome</th>
+                                <th class="p-2.5">Usuário</th>
+                                <th class="p-2.5">Perfil</th>
+                                <th class="p-2.5">Status</th>
+                                <th class="p-2.5 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-cad-vigilantes" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. RELATÓRIOS -->
         <section id="sec-relatorios" class="tela hidden space-y-5">
             <div class="no-print bg-white p-4 rounded-lg shadow-sm border flex flex-wrap items-end gap-3">
                 <div>
@@ -398,12 +491,14 @@
                     <table class="w-full text-left text-sm">
                         <thead class="bg-slate-50 border-b text-slate-600">
                             <tr>
-                                <th class="p-3">Data/Hora</th>
+                                <th class="p-3">Entrada / Chegada</th>
+                                <th class="p-3">Saída / Retorno / Entrega</th>
                                 <th class="p-3">Módulo</th>
                                 <th class="p-3">Descrição</th>
                                 <th class="p-3">Detalhes</th>
                                 <th class="p-3">Status</th>
-                                <th class="p-3">Registrado Por</th>
+                                <th class="p-3">Entrada Por</th>
+                                <th class="p-3">Saída / Entrega Por</th>
                             </tr>
                         </thead>
                         <tbody id="tb-relatorios" class="divide-y"></tbody>
@@ -434,16 +529,28 @@
             return (vig && (vig.nome || vig.usuario)) || 'Não informado';
         }
 
+        function isAdminAtual() {
+            const vig = getVigilanteAtual();
+            if (!vig) return false;
+            return String(vig.perfil || '').toUpperCase() === 'ADMIN' || String(vig.usuario || '').toLowerCase() === 'admin';
+        }
+
         function atualizarInterfaceVigilante() {
             const vig = getVigilanteAtual();
             const telaLogin = document.getElementById('tela-login');
             const badge = document.getElementById('vigilante-logado');
+            const boxAdmin = document.getElementById('box-admin-vigilantes');
+
             if (vig && (vig.nome || vig.usuario)) {
                 telaLogin.classList.add('hidden');
                 badge.innerText = vig.nome || vig.usuario;
             } else {
                 telaLogin.classList.remove('hidden');
                 badge.innerText = '-';
+            }
+
+            if (boxAdmin) {
+                boxAdmin.classList.toggle('hidden', !isAdminAtual());
             }
         }
 
@@ -480,10 +587,6 @@
             return agora.toISOString();
         }
 
-        function toggleBoxCadastro(id) {
-            document.getElementById(id).classList.toggle('hidden');
-        }
-
         function selecionarAba(nome, inputId) {
             document.querySelectorAll('.tela').forEach(s => s.classList.add('hidden'));
             document.getElementById(`sec-${nome}`).classList.remove('hidden');
@@ -498,6 +601,11 @@
             if (nome === 'relatorios') {
                 loadRelatorio();
                 return;
+            }
+
+            if (nome === 'cadastros') {
+                atualizarInterfaceVigilante();
+                carregarListasCadastros();
             }
 
             let focoId = inputId;
@@ -515,7 +623,7 @@
             }
         }
 
-        // ================= COLABORADORES (PEDESTRES & MOTORISTA FROTA) =================
+        // ================= COLABORADORES (PEDESTRES, MOTORISTA FROTA & CADASTROS) =================
         async function buscarColaboradores(termo, contexto) {
             const boxId = contexto === 'frota' ? 'sugestoes-colab-frota' : 'sugestoes-colab-pedestre';
             const box = document.getElementById(boxId);
@@ -523,7 +631,7 @@
             const lista = await res.json().catch(() => []);
 
             if (!Array.isArray(lista) || !lista.length) {
-                box.innerHTML = '<div class="p-2 text-xs text-slate-500">Nenhum colaborador encontrado no banco</div>';
+                box.innerHTML = '<div class="p-2 text-xs text-slate-500">Nenhum colaborador encontrado na aba Cadastros</div>';
                 box.classList.remove('hidden');
                 return;
             }
@@ -564,6 +672,188 @@
             document.getElementById('sugestoes-colab-frota').classList.add('hidden');
         }
 
+        async function carregarListasCadastros() {
+            const [colabs, frotas] = await Promise.all([
+                fetch('/api/colaboradores').then(r => r.json()).catch(() => []),
+                fetch('/api/frotas').then(r => r.json()).catch(() => [])
+            ]);
+
+            document.getElementById('tb-cad-colaboradores').innerHTML = (Array.isArray(colabs) ? colabs : []).map(c => `
+                <tr>
+                    <td class="p-2.5 font-medium">${c.nome}</td>
+                    <td class="p-2.5 text-slate-600">${c.departamento || '-'}</td>
+                    <td class="p-2.5 text-slate-600">${c.matricula || '-'}</td>
+                    <td class="p-2.5 text-right">
+                        <button type="button" onclick="excluirColaborador(${c.id})"
+                            class="text-xs bg-red-50 text-red-700 hover:bg-red-100 px-2.5 py-1 rounded">
+                            Excluir
+                        </button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum colaborador cadastrado</td></tr>';
+
+            document.getElementById('tb-cad-frotas').innerHTML = (Array.isArray(frotas) ? frotas : []).map(f => `
+                <tr>
+                    <td class="p-2.5 font-bold">${f.placa}</td>
+                    <td class="p-2.5 text-slate-700">${f.modelo}</td>
+                    <td class="p-2.5 text-slate-600">${f.km_atual !== null && f.km_atual !== undefined ? f.km_atual + ' km' : '-'}</td>
+                    <td class="p-2.5 text-right">
+                        <button type="button" onclick="excluirFrota(${f.id})"
+                            class="text-xs bg-red-50 text-red-700 hover:bg-red-100 px-2.5 py-1 rounded">
+                            Excluir
+                        </button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum veículo de frota cadastrado</td></tr>';
+
+            if (isAdminAtual()) {
+                await carregarListaVigilantes();
+            }
+        }
+
+        async function salvarNovoColaborador() {
+            const nome = document.getElementById('cad-c-nome').value.trim();
+            const departamento = document.getElementById('cad-c-depto').value.trim();
+            const matricula = document.getElementById('cad-c-mat').value.trim();
+
+            if (!nome) {
+                return alert('Informe o nome completo do colaborador.');
+            }
+
+            const res = await fetch('/api/colaboradores', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome, departamento, matricula })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                return alert(err.error || 'Erro ao cadastrar colaborador.');
+            }
+
+            document.getElementById('cad-c-nome').value = '';
+            document.getElementById('cad-c-depto').value = '';
+            document.getElementById('cad-c-mat').value = '';
+            carregarListasCadastros();
+            alert('Colaborador cadastrado com sucesso.');
+        }
+
+        async function excluirColaborador(id) {
+            if (!confirm('Deseja excluir este colaborador do cadastro?')) return;
+            await fetch(`/api/colaboradores/${id}`, { method: 'DELETE' });
+            carregarListasCadastros();
+        }
+
+        async function salvarNovaFrota() {
+            const placa = document.getElementById('cad-f-placa').value.trim().toUpperCase();
+            const modelo = document.getElementById('cad-f-modelo').value.trim();
+            const km_atual = document.getElementById('cad-f-km').value.trim();
+
+            if (!placa || !modelo) {
+                return alert('Informe placa e modelo do veículo.');
+            }
+
+            const res = await fetch('/api/frotas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ placa, modelo, km_atual: km_atual || null })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                return alert(err.error || 'Erro ao cadastrar veículo da frota.');
+            }
+
+            document.getElementById('cad-f-placa').value = '';
+            document.getElementById('cad-f-modelo').value = '';
+            document.getElementById('cad-f-km').value = '';
+            carregarListasCadastros();
+            alert('Veículo da frota cadastrado com sucesso.');
+        }
+
+        async function excluirFrota(id) {
+            if (!confirm('Deseja excluir este veículo da frota?')) return;
+            await fetch(`/api/frotas/${id}`, { method: 'DELETE' });
+            carregarListasCadastros();
+        }
+
+        // ================= VIGILANTES / PORTEIROS (APENAS ADMIN) =================
+        async function carregarListaVigilantes() {
+            if (!isAdminAtual()) return;
+            const vig = getVigilanteAtual();
+            const res = await fetch(`/api/vigilantes?solicitante_usuario=${encodeURIComponent(vig?.usuario || '')}`);
+            const lista = await res.json().catch(() => []);
+            if (!res.ok || !Array.isArray(lista)) return;
+
+            document.getElementById('tb-cad-vigilantes').innerHTML = lista.map(v => `
+                <tr>
+                    <td class="p-2.5 font-medium">${v.nome}</td>
+                    <td class="p-2.5 text-slate-600">${v.usuario}</td>
+                    <td class="p-2.5"><span class="px-2 py-0.5 text-xs rounded ${v.perfil === 'ADMIN' ? 'bg-amber-100 text-amber-800 font-semibold' : 'bg-slate-100 text-slate-700'}">${v.perfil}</span></td>
+                    <td class="p-2.5">${v.ativo !== false ? 'Ativo' : 'Inativo'}</td>
+                    <td class="p-2.5 text-right">
+                        ${String(v.usuario).toLowerCase() === 'admin' ? '-' : `<button type="button" onclick="excluirVigilante(${v.id})" class="text-xs bg-red-50 text-red-700 hover:bg-red-100 px-2.5 py-1 rounded">Excluir</button>`}
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" class="p-3 text-center text-slate-400">Nenhum porteiro cadastrado</td></tr>';
+        }
+
+        async function salvarNovoVigilante() {
+            if (!isAdminAtual()) {
+                return alert('Apenas o administrador pode cadastrar porteiros.');
+            }
+            const vig = getVigilanteAtual();
+            const nome = document.getElementById('cad-v-nome').value.trim();
+            const usuario = document.getElementById('cad-v-usuario').value.trim().toLowerCase();
+            const senha = document.getElementById('cad-v-senha').value;
+            const perfil = document.getElementById('cad-v-perfil').value;
+
+            if (!nome || !usuario || !senha) {
+                return alert('Preencha nome, usuário e senha.');
+            }
+
+            const res = await fetch('/api/vigilantes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    solicitante_usuario: vig?.usuario || '',
+                    nome,
+                    usuario,
+                    senha,
+                    perfil
+                })
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                return alert(data.error || 'Erro ao cadastrar porteiro.');
+            }
+
+            document.getElementById('cad-v-nome').value = '';
+            document.getElementById('cad-v-usuario').value = '';
+            document.getElementById('cad-v-senha').value = '';
+            carregarListaVigilantes();
+            alert('Porteiro cadastrado com sucesso.');
+        }
+
+        async function excluirVigilante(id) {
+            if (!isAdminAtual()) {
+                return alert('Apenas o administrador pode remover porteiros.');
+            }
+            if (!confirm('Deseja remover este usuário de acesso?')) return;
+            const vig = getVigilanteAtual();
+            const res = await fetch(`/api/vigilantes/${id}?solicitante_usuario=${encodeURIComponent(vig?.usuario || '')}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ solicitante_usuario: vig?.usuario || '' })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                return alert(data.error || 'Erro ao remover porteiro.');
+            }
+            carregarListaVigilantes();
+        }
+
         // ================= PEDESTRES =================
         function setTipoPedestre(tipo) {
             tipoPedestreAtual = tipo;
@@ -592,35 +882,6 @@
                 document.getElementById('sugestoes-colab-pedestre').classList.add('hidden');
                 document.getElementById('p-nome').focus();
             }
-        }
-
-        async function salvarNovoColaborador() {
-            const nome = document.getElementById('cad-c-nome').value.trim();
-            const departamento = document.getElementById('cad-c-depto').value.trim();
-            const matricula = document.getElementById('cad-c-mat').value.trim();
-
-            if (!nome) {
-                return alert('Informe o nome completo do colaborador.');
-            }
-
-            const res = await fetch('/api/colaboradores', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome, departamento, matricula })
-            });
-
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                return alert(err.error || 'Erro ao cadastrar colaborador.');
-            }
-
-            document.getElementById('cad-c-nome').value = '';
-            document.getElementById('cad-c-depto').value = '';
-            document.getElementById('cad-c-mat').value = '';
-            document.getElementById('box-cad-colab').classList.add('hidden');
-            setTipoPedestre('Colaborador');
-            selecionarColaborador(nome, departamento);
-            alert('Colaborador salvo no banco e selecionado.');
         }
 
         async function loadPedestres() {
@@ -746,42 +1007,13 @@
             }
         }
 
-        async function salvarNovaFrota() {
-            const placa = document.getElementById('cad-f-placa').value.trim().toUpperCase();
-            const modelo = document.getElementById('cad-f-modelo').value.trim();
-            const km_atual = document.getElementById('cad-f-km').value.trim();
-
-            if (!placa || !modelo) {
-                return alert('Informe placa e modelo do veículo.');
-            }
-
-            const res = await fetch('/api/frotas', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ placa, modelo, km_atual: km_atual || null })
-            });
-
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                return alert(err.error || 'Erro ao cadastrar veículo da frota.');
-            }
-
-            document.getElementById('cad-f-placa').value = '';
-            document.getElementById('cad-f-modelo').value = '';
-            document.getElementById('cad-f-km').value = '';
-            document.getElementById('box-cad-frota').classList.add('hidden');
-            setTipoFrota('FROTA');
-            selecionarCarroFrota(null, placa, modelo, km_atual || null);
-            alert('Veículo da frota salvo no banco e selecionado.');
-        }
-
         async function buscarFrotas(termo) {
             const box = document.getElementById('sugestoes-frota');
             const res = await fetch(`/api/frotas?q=${encodeURIComponent((termo || '').trim())}`);
             const lista = await res.json().catch(() => []);
 
             if (!Array.isArray(lista) || !lista.length) {
-                box.innerHTML = '<div class="p-2 text-xs text-slate-500">Nenhum veículo da frota encontrado no banco</div>';
+                box.innerHTML = '<div class="p-2 text-xs text-slate-500">Nenhum veículo da frota encontrado na aba Cadastros</div>';
                 box.classList.remove('hidden');
                 return;
             }
@@ -845,10 +1077,10 @@
                 const motorista = document.getElementById('f-motorista').value.trim();
 
                 if (!placa || !modelo) {
-                    return alert('Selecione um veículo da frota no banco.');
+                    return alert('Selecione um veículo da frota cadastrado.');
                 }
                 if (!motorista) {
-                    return alert('Selecione um colaborador cadastrado no banco como motorista da frota.');
+                    return alert('Selecione um colaborador cadastrado como motorista da frota.');
                 }
 
                 await fetch('/api/veiculos', {
@@ -975,11 +1207,13 @@
                 (Array.isArray(ped) ? ped : []).forEach(p => {
                     linhas.push({
                         data: p.data_entrada,
+                        data_saida: p.data_saida,
                         modulo: 'Pedestres',
                         descricao: p.nome,
                         detalhe: [p.tipo, p.documento, p.destino, p.responsavel ? `Resp: ${p.responsavel}` : null, p.departamento].filter(Boolean).join(' • ') || '-',
                         status: p.status === 'NO_LOCAL' ? 'No Local' : 'Saiu',
-                        registrado_por: p.registrado_por || '-'
+                        registrado_por: p.registrado_por || '-',
+                        acao_por: p.finalizado_por || '-'
                     });
                 });
             }
@@ -988,11 +1222,13 @@
                 (Array.isArray(fro) ? fro : []).forEach(v => {
                     linhas.push({
                         data: v.data_entrada_saida,
+                        data_saida: v.data_retorno_saida,
                         modulo: 'Frotas',
                         descricao: `${v.placa} - ${v.modelo || ''}`,
                         detalhe: [v.motorista, v.documento ? `Doc: ${v.documento}` : null, v.empresa, v.destino_origem].filter(Boolean).join(' • ') || '-',
                         status: v.status !== 'FINALIZADO' ? 'Ativo' : 'Finalizado',
-                        registrado_por: v.registrado_por || '-'
+                        registrado_por: v.registrado_por || '-',
+                        acao_por: v.finalizado_por || '-'
                     });
                 });
             }
@@ -1001,11 +1237,13 @@
                 (Array.isArray(enc) ? enc : []).forEach(e => {
                     linhas.push({
                         data: e.data_chegada,
+                        data_saida: e.data_entrega,
                         modulo: 'Encomendas',
                         descricao: e.destinatario,
                         detalhe: `${e.remetente} • ${e.tipo_volume || '-'}${e.retirado_por ? ' • Retirado por: ' + e.retirado_por : ''}`,
                         status: e.status === 'AGUARDANDO_RETIRADA' ? 'Pendente' : 'Entregue',
-                        registrado_por: e.registrado_por || '-'
+                        registrado_por: e.registrado_por || '-',
+                        acao_por: e.entregue_por || '-'
                     });
                 });
             }
@@ -1029,13 +1267,15 @@
             document.getElementById('tb-relatorios').innerHTML = linhas.map(r => `
                 <tr>
                     <td class="p-3">${fmtDataHora(r.data)}</td>
+                    <td class="p-3">${r.data_saida ? fmtDataHora(r.data_saida) : '-'}</td>
                     <td class="p-3 font-medium">${r.modulo}</td>
                     <td class="p-3 font-semibold">${r.descricao}</td>
                     <td class="p-3 text-slate-600">${r.detalhe}</td>
                     <td class="p-3">${r.status}</td>
                     <td class="p-3 text-slate-600">${r.registrado_por}</td>
+                    <td class="p-3 text-slate-600">${r.acao_por}</td>
                 </tr>
-            `).join('') || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum registro encontrado</td></tr>';
+            `).join('') || '<tr><td colspan="8" class="p-4 text-center text-slate-400">Nenhum registro encontrado</td></tr>';
         }
 
         function gerarPdfRelatorio() {
@@ -1048,7 +1288,8 @@
                 loadPedestres(),
                 loadFrotas(),
                 loadEncomendas(),
-                loadRelatorio()
+                loadRelatorio(),
+                carregarListasCadastros()
             ]);
         }
 
