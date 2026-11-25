@@ -526,7 +526,7 @@ app.delete('/api/vigilantes/:id', async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor da Portaria a correr em http://localhost:${PORT}`);
+const PORT = Number(process.env.PORT) || 3030;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor da Portaria rodando em http://0.0.0.0:${PORT} (Rede: http://10.64.10.100:${PORT})`);
 });
