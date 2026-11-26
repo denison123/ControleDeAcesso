@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portaria Simples</title>
+    <title>Portaria Polo Segurança</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
@@ -295,21 +295,39 @@
 
         <!-- 3. ENCOMENDAS (REGISTRO DE RECEBIMENTO/ENTREGA) -->
         <section id="sec-encomendas" class="tela no-print hidden space-y-5">
-            <form onsubmit="addEncomenda(event)" class="bg-white p-4 rounded-lg shadow-sm border grid grid-cols-1 sm:grid-cols-5 gap-3">
-                <input type="text" id="e-dest" placeholder="Destinatário *" required class="border p-2 rounded">
-                <input type="text" id="e-rem" placeholder="Remetente *" required class="border p-2 rounded">
-                <input type="text" id="e-vol" placeholder="Volume / NF" class="border p-2 rounded">
-                <div>
-                    <input type="time" id="e-hora" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
-                    <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+            <form onsubmit="addEncomenda(event)" class="bg-white p-4 rounded-lg shadow-sm border space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-start">
+                    <div class="relative">
+                        <input type="text" id="e-dest"
+                            oninput="onInputDestinatarioEncomenda(this.value)"
+                            onfocus="buscarColaboradores(this.value, 'encomenda')"
+                            placeholder="Buscar colaborador destinatário *" required autocomplete="off"
+                            class="border p-2 rounded w-full">
+                        <input type="hidden" id="e-dest-colaborador-id">
+                        <div id="sugestoes-colab-encomenda"
+                            class="hidden absolute z-20 left-0 right-0 bg-white border border-slate-300 rounded shadow-md mt-1 max-h-48 overflow-y-auto">
+                        </div>
+                        <span id="e-dest-email-hint" class="text-[10px] text-slate-400 block mt-0.5">
+                            Digite para buscar colaborador cadastrado no banco
+                        </span>
+                    </div>
+                    <input type="text" id="e-setor" placeholder="Setor / Departamento" class="border p-2 rounded">
+                    <input type="text" id="e-rem" placeholder="Remetente *" required class="border p-2 rounded">
+                    <input type="text" id="e-vol" placeholder="Volume / NF" class="border p-2 rounded">
+                    <div>
+                        <input type="time" id="e-hora" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
+                        <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+                    </div>
                 </div>
-                <button type="submit"
-                    class="inline-flex items-center justify-center gap-2 bg-emerald-700 text-white font-semibold py-2 px-4 rounded hover:bg-emerald-800 self-start">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                    <span>Registrar Encomenda</span>
-                </button>
+                <div class="flex justify-end">
+                    <button type="submit"
+                        class="inline-flex items-center justify-center gap-2 bg-emerald-700 text-white font-semibold py-2 px-4 rounded hover:bg-emerald-800">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        <span>Registrar Encomenda</span>
+                    </button>
+                </div>
             </form>
 
             <div class="bg-white rounded-lg shadow-sm border overflow-x-auto">
@@ -335,15 +353,16 @@
                 <div class="flex flex-wrap justify-between items-center border-b pb-2">
                     <div>
                         <h2 class="text-base font-bold text-slate-900">Cadastro de Colaboradores</h2>
-                        <p class="text-xs text-slate-500">Cadastre funcionários para seleção rápida em Pedestres e como Motorista de Frota</p>
+                        <p class="text-xs text-slate-500">Cadastre funcionários para seleção rápida em Pedestres, Motorista de Frota e Encomendas (com aviso por e-mail)</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
                     <input type="text" id="cad-c-nome" placeholder="Nome completo *" class="border p-2 rounded text-sm sm:col-span-2">
                     <input type="text" id="cad-c-depto" placeholder="Departamento" class="border p-2 rounded text-sm">
+                    <input type="text" id="cad-c-mat" placeholder="Matrícula" class="border p-2 rounded text-sm">
                     <div class="flex gap-2">
-                        <input type="text" id="cad-c-mat" placeholder="Matrícula" class="border p-2 rounded text-sm w-full">
+                        <input type="email" id="cad-c-email" placeholder="E-mail" class="border p-2 rounded text-sm w-full">
                         <button type="button" onclick="salvarNovoColaborador()"
                             class="bg-slate-900 text-white text-xs font-semibold px-4 rounded hover:bg-slate-800 shrink-0">
                             Salvar
@@ -358,6 +377,7 @@
                                 <th class="p-2.5">Nome</th>
                                 <th class="p-2.5">Departamento</th>
                                 <th class="p-2.5">Matrícula</th>
+                                <th class="p-2.5">E-mail</th>
                                 <th class="p-2.5 text-right">Ação</th>
                             </tr>
                         </thead>
@@ -623,9 +643,11 @@
             }
         }
 
-        // ================= COLABORADORES (PEDESTRES, MOTORISTA FROTA & CADASTROS) =================
+        // ================= COLABORADORES (PEDESTRES, MOTORISTA FROTA, ENCOMENDAS & CADASTROS) =================
         async function buscarColaboradores(termo, contexto) {
-            const boxId = contexto === 'frota' ? 'sugestoes-colab-frota' : 'sugestoes-colab-pedestre';
+            const boxId = contexto === 'frota'
+                ? 'sugestoes-colab-frota'
+                : (contexto === 'encomenda' ? 'sugestoes-colab-encomenda' : 'sugestoes-colab-pedestre');
             const box = document.getElementById(boxId);
             const res = await fetch(`/api/colaboradores?q=${encodeURIComponent((termo || '').trim())}`);
             const lista = await res.json().catch(() => []);
@@ -639,15 +661,20 @@
             box.innerHTML = lista.map(c => {
                 const nomeSafe = (c.nome || '').replace(/'/g, "\\'");
                 const deptoSafe = (c.departamento || '').replace(/'/g, "\\'");
-                const handler = contexto === 'frota'
-                    ? `selecionarMotoristaFrota('${nomeSafe}')`
-                    : `selecionarColaborador('${nomeSafe}', '${deptoSafe}')`;
+                const emailSafe = (c.email || '').replace(/'/g, "\\'");
+
+                let handler = `selecionarColaborador('${nomeSafe}', '${deptoSafe}')`;
+                if (contexto === 'frota') {
+                    handler = `selecionarMotoristaFrota('${nomeSafe}')`;
+                } else if (contexto === 'encomenda') {
+                    handler = `selecionarDestinatarioEncomenda('${nomeSafe}', '${deptoSafe}', '${emailSafe}', '${c.id}')`;
+                }
 
                 return `
                     <button type="button" onclick="${handler}"
                         class="w-full text-left px-3 py-2 text-xs hover:bg-slate-100 border-b last:border-b-0">
                         <span class="font-semibold block text-slate-800">${c.nome}</span>
-                        <span class="text-slate-500">${c.departamento || 'Sem departamento'}${c.matricula ? ' • Mat: ' + c.matricula : ''}</span>
+                        <span class="text-slate-500">${c.departamento || 'Sem departamento'}${c.email ? ' • ' + c.email : (c.matricula ? ' • Mat: ' + c.matricula : '')}</span>
                     </button>
                 `;
             }).join('');
@@ -672,6 +699,39 @@
             document.getElementById('sugestoes-colab-frota').classList.add('hidden');
         }
 
+        function onInputDestinatarioEncomenda(valor) {
+            const idInput = document.getElementById('e-dest-colaborador-id');
+            const hint = document.getElementById('e-dest-email-hint');
+            if (idInput) idInput.value = '';
+            if (hint) {
+                hint.className = 'text-[10px] text-slate-400 block mt-0.5';
+                hint.innerText = 'Digite para buscar colaborador cadastrado no banco';
+            }
+            buscarColaboradores(valor, 'encomenda');
+        }
+
+        function selecionarDestinatarioEncomenda(nome, departamento, email, id = '') {
+            document.getElementById('e-dest').value = nome;
+            const idInput = document.getElementById('e-dest-colaborador-id');
+            if (idInput) idInput.value = id || '';
+
+            const setorInput = document.getElementById('e-setor');
+            if (setorInput && departamento && !setorInput.value.trim()) {
+                setorInput.value = departamento;
+            }
+            const hint = document.getElementById('e-dest-email-hint');
+            if (hint) {
+                if (email) {
+                    hint.className = 'text-[10px] text-emerald-700 font-medium block mt-0.5';
+                    hint.innerText = `Colaborador selecionado • E-mail: ${email}`;
+                } else {
+                    hint.className = 'text-[10px] text-amber-700 block mt-0.5';
+                    hint.innerText = 'Colaborador selecionado • Sem e-mail cadastrado';
+                }
+            }
+            document.getElementById('sugestoes-colab-encomenda').classList.add('hidden');
+        }
+
         async function carregarListasCadastros() {
             const [colabs, frotas] = await Promise.all([
                 fetch('/api/colaboradores').then(r => r.json()).catch(() => []),
@@ -683,6 +743,7 @@
                     <td class="p-2.5 font-medium">${c.nome}</td>
                     <td class="p-2.5 text-slate-600">${c.departamento || '-'}</td>
                     <td class="p-2.5 text-slate-600">${c.matricula || '-'}</td>
+                    <td class="p-2.5 text-slate-600">${c.email || '-'}</td>
                     <td class="p-2.5 text-right">
                         <button type="button" onclick="excluirColaborador(${c.id})"
                             class="text-xs bg-red-50 text-red-700 hover:bg-red-100 px-2.5 py-1 rounded">
@@ -690,7 +751,7 @@
                         </button>
                     </td>
                 </tr>
-            `).join('') || '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum colaborador cadastrado</td></tr>';
+            `).join('') || '<tr><td colspan="5" class="p-3 text-center text-slate-400">Nenhum colaborador cadastrado</td></tr>';
 
             document.getElementById('tb-cad-frotas').innerHTML = (Array.isArray(frotas) ? frotas : []).map(f => `
                 <tr>
@@ -715,6 +776,7 @@
             const nome = document.getElementById('cad-c-nome').value.trim();
             const departamento = document.getElementById('cad-c-depto').value.trim();
             const matricula = document.getElementById('cad-c-mat').value.trim();
+            const email = document.getElementById('cad-c-email').value.trim();
 
             if (!nome) {
                 return alert('Informe o nome completo do colaborador.');
@@ -723,7 +785,7 @@
             const res = await fetch('/api/colaboradores', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome, departamento, matricula })
+                body: JSON.stringify({ nome, departamento, matricula, email })
             });
 
             if (!res.ok) {
@@ -734,6 +796,7 @@
             document.getElementById('cad-c-nome').value = '';
             document.getElementById('cad-c-depto').value = '';
             document.getElementById('cad-c-mat').value = '';
+            document.getElementById('cad-c-email').value = '';
             carregarListasCadastros();
             alert('Colaborador cadastrado com sucesso.');
         }
@@ -1163,18 +1226,32 @@
         async function addEncomenda(e) {
             e.preventDefault();
             const dataManual = montarDataManual(document.getElementById('e-hora').value);
-            await fetch('/api/encomendas', {
+            const res = await fetch('/api/encomendas', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    destinatario: document.getElementById('e-dest').value,
-                    remetente: document.getElementById('e-rem').value,
-                    tipo_volume: document.getElementById('e-vol').value || 'Caixa',
+                    destinatario: document.getElementById('e-dest').value.trim(),
+                    setor: document.getElementById('e-setor').value.trim() || null,
+                    remetente: document.getElementById('e-rem').value.trim(),
+                    tipo_volume: document.getElementById('e-vol').value.trim() || 'Caixa',
                     registrado_por: getNomeVigilante(),
                     ...(dataManual ? { data_chegada: dataManual } : {})
                 })
             });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                return alert(err.error || 'Erro ao registrar encomenda.');
+            }
+
             e.target.reset();
+            const idInput = document.getElementById('e-dest-colaborador-id');
+            if (idInput) idInput.value = '';
+            const hint = document.getElementById('e-dest-email-hint');
+            if (hint) {
+                hint.className = 'text-[10px] text-slate-400 block mt-0.5';
+                hint.innerText = 'Digite para buscar colaborador cadastrado no banco';
+            }
             loadEncomendas();
         }
 
@@ -1302,6 +1379,9 @@
             }
             if (!e.target.closest('#f-busca') && !e.target.closest('#sugestoes-frota')) {
                 document.getElementById('sugestoes-frota').classList.add('hidden');
+            }
+            if (!e.target.closest('#e-dest') && !e.target.closest('#sugestoes-colab-encomenda')) {
+                document.getElementById('sugestoes-colab-encomenda').classList.add('hidden');
             }
         });
 

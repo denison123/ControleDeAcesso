@@ -4,6 +4,7 @@ const { Pool } = require('pg');
 const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const app = express();
 app.use(cors());
@@ -19,17 +20,102 @@ const pool = new Pool({
     options: '-c search_path=portaria',
 });
 
+const mailTransporter = process.env.SMTP_HOST
+    ? nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT) || 587,
+          secure: Number(process.env.SMTP_PORT) === 465,
+          auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS,
+          },
+      })
+    : null;
+
 function resolverDataManual(valor) {
     if (!valor) return new Date();
     const dt = new Date(valor);
     return Number.isNaN(dt.getTime()) ? new Date() : dt;
 }
 
+async function enviarEmailEncomenda(encomenda) {
+    if (!mailTransporter) return;
+
+    try {
+        const colabRes = await pool.query(
+            `SELECT nome, email
+             FROM colaboradores
+             WHERE LOWER(TRIM(nome)) = LOWER(TRIM($1))
+               AND email IS NOT NULL
+               AND TRIM(email) <> ''
+             LIMIT 1`,
+            [encomenda.destinatario]
+        );
+
+        const colaborador = colabRes.rows[0];
+        if (!colaborador) return;
+
+        const dataFormatada = new Date(encomenda.data_chegada).toLocaleString('pt-BR', {
+            timeZone: 'America/Belem',
+        });
+
+        const assunto = `📦 Encomenda recebida na Portaria (${encomenda.remetente || 'Novo volume'})`;
+
+        const textoSimples =
+            `Olá, ${colaborador.nome}!\n\n` +
+            `Uma encomenda foi registrada para você na portaria.\n\n` +
+            `• Remetente: ${encomenda.remetente || 'Não informado'}\n` +
+            `• Volume / NF: ${encomenda.tipo_volume || 'Não informado'}\n` +
+            `• Setor: ${encomenda.setor || '-'}\n` +
+            `• Data / Hora: ${dataFormatada}\n\n` +
+            `Por favor, compareça à portaria para realizar a retirada.`;
+
+        const corpoHtml = `
+            <div style="font-family: Arial, sans-serif; color: #0f172a; background-color: #ffffff; padding: 16px; max-width: 540px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <h2 style="color: #0f172a; margin: 0 0 8px; font-size: 18px;">📦 Nova Encomenda na Portaria</h2>
+                <p style="color: #0f172a; margin: 0 0 10px;">Olá, <strong>${colaborador.nome}</strong>!</p>
+                <p style="color: #0f172a; margin: 0 0 14px;">Uma encomenda foi registrada para você na portaria:</p>
+                <table style="width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 14px; background-color: #ffffff; color: #0f172a;">
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; background-color: #f1f5f9; color: #0f172a; width: 35%;"><strong>Remetente</strong></td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; background-color: #ffffff; color: #0f172a;">${encomenda.remetente || 'Não informado'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; background-color: #f1f5f9; color: #0f172a;"><strong>Volume / NF</strong></td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; background-color: #ffffff; color: #0f172a;">${encomenda.tipo_volume || 'Não informado'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; background-color: #f1f5f9; color: #0f172a;"><strong>Setor</strong></td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; background-color: #ffffff; color: #0f172a;">${encomenda.setor || '-'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; background-color: #f1f5f9; color: #0f172a;"><strong>Data / Hora</strong></td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; background-color: #ffffff; color: #0f172a;">${dataFormatada}</td>
+                    </tr>
+                </table>
+                <p style="font-size: 13px; color: #334155; margin: 0;">Por favor, compareça à portaria para realizar a retirada.</p>
+            </div>
+        `;
+
+        await mailTransporter.sendMail({
+            from: `"Sistema Portaria — Polo Segurança" <${process.env.SMTP_USER}>`,
+            to: colaborador.email,
+            subject: assunto,
+            text: textoSimples,
+            html: corpoHtml,
+        });
+
+        console.log(`E-mail de encomenda enviado para ${colaborador.email}`);
+    } catch (err) {
+        console.error('Falha ao enviar e-mail da encomenda:', err.message);
+    }
+}
+
 // ================= LOGIN DO VIGILANTE =================
 app.post('/api/login', async (req, res) => {
     const { usuario, senha } = req.body;
     if (!usuario || !String(usuario).trim() || !senha) {
-        return res.status(400).json({ error: 'Informe utilizador e palavra-passe.' });
+        return res.status(400).json({ error: 'Informe usuário e senha.' });
     }
     try {
         const senhaHash = crypto.createHash('sha256').update(String(senha)).digest('hex');
@@ -41,12 +127,12 @@ app.post('/api/login', async (req, res) => {
             [String(usuario).trim(), senhaHash]
         );
         if (!result.rows.length) {
-            return res.status(401).json({ error: 'Utilizador ou palavra-passe inválidos.' });
+            return res.status(401).json({ error: 'Usuário ou senha inválidos.' });
         }
         res.json({ vigilante: result.rows[0] });
     } catch (err) {
         console.error('Erro em POST /api/login:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao autenticar.' });
     }
 });
 
@@ -56,14 +142,17 @@ app.get('/api/colaboradores', async (req, res) => {
     try {
         if (!termo) {
             const todos = await pool.query(
-                'SELECT id, nome, departamento, matricula FROM colaboradores ORDER BY nome ASC LIMIT 50'
+                'SELECT id, nome, departamento, matricula, email FROM colaboradores ORDER BY nome ASC LIMIT 50'
             );
             return res.json(todos.rows);
         }
         const result = await pool.query(
-            `SELECT id, nome, departamento, matricula
+            `SELECT id, nome, departamento, matricula, email
              FROM colaboradores
-             WHERE nome ILIKE $1 OR COALESCE(matricula, '') ILIKE $1 OR COALESCE(departamento, '') ILIKE $1
+             WHERE nome ILIKE $1
+                OR COALESCE(matricula, '') ILIKE $1
+                OR COALESCE(departamento, '') ILIKE $1
+                OR COALESCE(email, '') ILIKE $1
              ORDER BY nome ASC
              LIMIT 50`,
             [`%${termo}%`]
@@ -71,29 +160,30 @@ app.get('/api/colaboradores', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Erro em GET /api/colaboradores:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao buscar colaboradores.' });
     }
 });
 
 app.post('/api/colaboradores', async (req, res) => {
-    const { nome, departamento, matricula } = req.body;
+    const { nome, departamento, matricula, email } = req.body;
     if (!nome || !String(nome).trim()) {
         return res.status(400).json({ error: 'Nome do colaborador é obrigatório.' });
     }
     try {
         const result = await pool.query(
-            `INSERT INTO colaboradores (nome, departamento, matricula)
-             VALUES ($1, $2, $3) RETURNING *`,
+            `INSERT INTO colaboradores (nome, departamento, matricula, email)
+             VALUES ($1, $2, $3, $4) RETURNING *`,
             [
                 String(nome).trim(),
                 departamento ? String(departamento).trim() : null,
-                matricula ? String(matricula).trim() : null
+                matricula ? String(matricula).trim() : null,
+                email ? String(email).trim().toLowerCase() : null
             ]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error('Erro em POST /api/colaboradores:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao cadastrar colaborador.' });
     }
 });
 
@@ -103,7 +193,7 @@ app.delete('/api/colaboradores/:id', async (req, res) => {
         res.json({ ok: true });
     } catch (err) {
         console.error('Erro em DELETE /api/colaboradores/:id:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao excluir colaborador.' });
     }
 });
 
@@ -128,7 +218,7 @@ app.get('/api/frotas', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Erro em GET /api/frotas:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao buscar veículos da frota.' });
     }
 });
 
@@ -153,7 +243,7 @@ app.post('/api/frotas', async (req, res) => {
             return res.status(400).json({ error: 'Já existe um veículo cadastrado com essa placa.' });
         }
         console.error('Erro em POST /api/frotas:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao cadastrar veículo.' });
     }
 });
 
@@ -163,7 +253,7 @@ app.delete('/api/frotas/:id', async (req, res) => {
         res.json({ ok: true });
     } catch (err) {
         console.error('Erro em DELETE /api/frotas/:id:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao excluir veículo.' });
     }
 });
 
@@ -174,7 +264,7 @@ app.get('/api/pedestres', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Erro em GET /api/pedestres:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao listar pedestres.' });
     }
 });
 
@@ -239,7 +329,7 @@ app.post('/api/pedestres', async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error('Erro em POST /api/pedestres:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao registrar pedestre.' });
     }
 });
 
@@ -255,7 +345,7 @@ app.put('/api/pedestres/:id/saida', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Erro em PUT /api/pedestres/:id/saida:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao registrar saída de pedestre.' });
     }
 });
 
@@ -266,7 +356,7 @@ app.get('/api/veiculos', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Erro em GET /api/veiculos:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao listar veículos.' });
     }
 });
 
@@ -307,15 +397,17 @@ app.post('/api/veiculos', async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error('Erro em POST /api/veiculos:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao registrar movimentação de veículo.' });
     }
 });
 
 app.put('/api/veiculos/:id/finalizar', async (req, res) => {
     const { km_final, finalizado_por } = req.body || {};
     const kmFinalNum = km_final !== '' && km_final !== null && km_final !== undefined ? Number(km_final) : null;
+    const client = await pool.connect();
     try {
-        const result = await pool.query(
+        await client.query('BEGIN');
+        const result = await client.query(
             `UPDATE portaria_veiculos
              SET data_retorno_saida = CURRENT_TIMESTAMP, km_final = $1, status = 'FINALIZADO', finalizado_por = COALESCE($3, finalizado_por)
              WHERE id = $2 RETURNING *`,
@@ -323,15 +415,19 @@ app.put('/api/veiculos/:id/finalizar', async (req, res) => {
         );
         const veiculo = result.rows[0];
         if (veiculo && veiculo.veiculo_frota_id && kmFinalNum !== null) {
-            await pool.query(
+            await client.query(
                 'UPDATE frotas_veiculos SET km_atual = $1 WHERE id = $2',
                 [kmFinalNum, veiculo.veiculo_frota_id]
             );
         }
+        await client.query('COMMIT');
         res.json(veiculo);
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error('Erro em PUT /api/veiculos/:id/finalizar:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao finalizar movimentação de veículo.' });
+    } finally {
+        client.release();
     }
 });
 
@@ -342,7 +438,7 @@ app.get('/api/encomendas', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Erro em GET /api/encomendas:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao listar encomendas.' });
     }
 });
 
@@ -357,6 +453,11 @@ app.post('/api/encomendas', async (req, res) => {
         registrado_por,
         data_chegada
     } = req.body;
+
+    if (!destinatario || !String(destinatario).trim()) {
+        return res.status(400).json({ error: 'Destinatário é obrigatório.' });
+    }
+
     try {
         const dataChegadaResolvida = resolverDataManual(data_chegada);
         const result = await pool.query(
@@ -364,20 +465,24 @@ app.post('/api/encomendas', async (req, res) => {
                 (destinatario, setor, remetente, tipo_volume, codigo_rastreio, porteiro_recebeu, registrado_por, data_chegada)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
             [
-                destinatario,
-                setor,
-                remetente,
-                tipo_volume,
-                codigo_rastreio,
-                porteiro_recebeu,
+                String(destinatario).trim(),
+                setor ? String(setor).trim() : null,
+                remetente ? String(remetente).trim() : null,
+                tipo_volume ? String(tipo_volume).trim() : null,
+                codigo_rastreio ? String(codigo_rastreio).trim() : null,
+                porteiro_recebeu ? String(porteiro_recebeu).trim() : null,
                 registrado_por ? String(registrado_por).trim() : 'Não informado',
                 dataChegadaResolvida
             ]
         );
-        res.status(201).json(result.rows[0]);
+
+        const encomendaSalva = result.rows[0];
+        enviarEmailEncomenda(encomendaSalva);
+
+        res.status(201).json(encomendaSalva);
     } catch (err) {
         console.error('Erro em POST /api/encomendas:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao registrar encomenda.' });
     }
 });
 
@@ -393,7 +498,7 @@ app.put('/api/encomendas/:id/entregar', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Erro em PUT /api/encomendas/:id/entregar:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao registrar entrega de encomenda.' });
     }
 });
 
@@ -471,7 +576,7 @@ app.get('/api/relatorios', async (req, res) => {
         res.json(linhas);
     } catch (err) {
         console.error('Erro em GET /api/relatorios:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao gerar relatório.' });
     }
 });
 
@@ -484,14 +589,14 @@ app.get('/api/vigilantes', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Erro em GET /api/vigilantes:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao listar vigilantes.' });
     }
 });
 
 app.post('/api/vigilantes', async (req, res) => {
     const { nome, usuario, senha, perfil } = req.body;
     if (!nome || !String(nome).trim() || !usuario || !String(usuario).trim() || !senha || !String(senha).trim()) {
-        return res.status(400).json({ error: 'Nome, utilizador e palavra-passe são obrigatórios.' });
+        return res.status(400).json({ error: 'Nome, usuário e senha são obrigatórios.' });
     }
     try {
         const senhaHash = crypto.createHash('sha256').update(String(senha)).digest('hex');
@@ -509,10 +614,10 @@ app.post('/api/vigilantes', async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         if (err.code === '23505') {
-            return res.status(400).json({ error: 'Já existe um vigilante com este nome de utilizador.' });
+            return res.status(400).json({ error: 'Já existe um vigilante com este nome de usuário.' });
         }
         console.error('Erro em POST /api/vigilantes:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao cadastrar vigilante.' });
     }
 });
 
@@ -522,7 +627,7 @@ app.delete('/api/vigilantes/:id', async (req, res) => {
         res.json({ ok: true });
     } catch (err) {
         console.error('Erro em DELETE /api/vigilantes/:id:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Erro interno ao excluir vigilante.' });
     }
 });
 
