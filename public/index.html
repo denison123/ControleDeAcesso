@@ -179,6 +179,26 @@
                 </div>
             </form>
 
+            <!-- Barra de busca rápida nos registros de Pedestres -->
+            <div class="bg-white p-3 rounded-lg shadow-sm border flex flex-wrap items-center justify-between gap-2">
+                <div class="relative flex-1 min-w-[220px]">
+                    <input type="text" id="filtro-pedestres" oninput="renderPedestres()"
+                        placeholder="Buscar registro para dar saída (nome, departamento, destino, doc)..."
+                        class="border p-2 pr-8 rounded w-full text-sm">
+                    <button type="button" onclick="limparFiltro('filtro-pedestres', renderPedestres)" title="Limpar busca"
+                        class="hidden id-clear-filtro-pedestres absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs font-bold">
+                        ✕
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-filtro-ped-pendentes" onclick="alternarFiltroPendentes('pedestres')"
+                        class="px-3 py-1.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 hover:bg-amber-200 transition">
+                        Apenas no local
+                    </button>
+                    <span id="resumo-filtro-pedestres" class="text-xs text-slate-500"></span>
+                </div>
+            </div>
+
             <div class="bg-white rounded-lg shadow-sm border overflow-x-auto">
                 <table class="w-full text-left text-sm">
                     <thead class="bg-slate-50 border-b text-slate-600">
@@ -278,6 +298,26 @@
                 </div>
             </form>
 
+            <!-- Barra de busca rápida nos registros de Frotas -->
+            <div class="bg-white p-3 rounded-lg shadow-sm border flex flex-wrap items-center justify-between gap-2">
+                <div class="relative flex-1 min-w-[220px]">
+                    <input type="text" id="filtro-frotas" oninput="renderFrotas()"
+                        placeholder="Buscar veículo para finalizar/retorno (placa, modelo, motorista, empresa)..."
+                        class="border p-2 pr-8 rounded w-full text-sm">
+                    <button type="button" onclick="limparFiltro('filtro-frotas', renderFrotas)" title="Limpar busca"
+                        class="hidden id-clear-filtro-frotas absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs font-bold">
+                        ✕
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-filtro-fro-pendentes" onclick="alternarFiltroPendentes('frotas')"
+                        class="px-3 py-1.5 rounded text-xs font-semibold bg-blue-100 text-blue-800 hover:bg-blue-200 transition">
+                        Apenas ativos
+                    </button>
+                    <span id="resumo-filtro-frotas" class="text-xs text-slate-500"></span>
+                </div>
+            </div>
+
             <div class="bg-white rounded-lg shadow-sm border overflow-x-auto">
                 <table class="w-full text-left text-sm">
                     <thead class="bg-slate-50 border-b text-slate-600">
@@ -332,6 +372,26 @@
                     </button>
                 </div>
             </form>
+
+            <!-- Barra de busca rápida nos registros de Encomendas -->
+            <div class="bg-white p-3 rounded-lg shadow-sm border flex flex-wrap items-center justify-between gap-2">
+                <div class="relative flex-1 min-w-[220px]">
+                    <input type="text" id="filtro-encomendas" oninput="renderEncomendas()"
+                        placeholder="Buscar encomenda para entregar (destinatário, remetente, volume, setor)..."
+                        class="border p-2 pr-8 rounded w-full text-sm">
+                    <button type="button" onclick="limparFiltro('filtro-encomendas', renderEncomendas)" title="Limpar busca"
+                        class="hidden id-clear-filtro-encomendas absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs font-bold">
+                        ✕
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-filtro-enc-pendentes" onclick="alternarFiltroPendentes('encomendas')"
+                        class="px-3 py-1.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition">
+                        Apenas pendentes
+                    </button>
+                    <span id="resumo-filtro-encomendas" class="text-xs text-slate-500"></span>
+                </div>
+            </div>
 
             <div class="bg-white rounded-lg shadow-sm border overflow-x-auto">
                 <table class="w-full text-left text-sm">
@@ -536,8 +596,59 @@
         let tipoFrotaAtual = 'FROTA';
         let veiculoFrotaSelecionadoId = null;
 
+        let cachePedestres = [];
+        let cacheFrotas = [];
+        let cacheEncomendas = [];
+
+        let apenasPendentesPedestres = false;
+        let apenasPendentesFrotas = false;
+        let apenasPendentesEncomendas = false;
+
         const fmtHora = (d) => d ? new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-';
         const fmtDataHora = (d) => d ? new Date(d).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+        const normalizarTexto = (v) => String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+        function limparFiltro(inputId, renderFn) {
+            const el = document.getElementById(inputId);
+            if (el) {
+                el.value = '';
+                el.focus();
+            }
+            if (typeof renderFn === 'function') renderFn();
+        }
+
+        function atualizarBotaoLimpar(inputId) {
+            const el = document.getElementById(inputId);
+            const btn = document.querySelector(`.id-clear-${inputId}`);
+            if (el && btn) {
+                btn.classList.toggle('hidden', !el.value.trim());
+            }
+        }
+
+        function alternarFiltroPendentes(modulo) {
+            if (modulo === 'pedestres') {
+                apenasPendentesPedestres = !apenasPendentesPedestres;
+                const btn = document.getElementById('btn-filtro-ped-pendentes');
+                btn.className = apenasPendentesPedestres
+                    ? 'px-3 py-1.5 rounded text-xs font-semibold bg-amber-600 text-white transition'
+                    : 'px-3 py-1.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 hover:bg-amber-200 transition';
+                renderPedestres();
+            } else if (modulo === 'frotas') {
+                apenasPendentesFrotas = !apenasPendentesFrotas;
+                const btn = document.getElementById('btn-filtro-fro-pendentes');
+                btn.className = apenasPendentesFrotas
+                    ? 'px-3 py-1.5 rounded text-xs font-semibold bg-blue-700 text-white transition'
+                    : 'px-3 py-1.5 rounded text-xs font-semibold bg-blue-100 text-blue-800 hover:bg-blue-200 transition';
+                renderFrotas();
+            } else if (modulo === 'encomendas') {
+                apenasPendentesEncomendas = !apenasPendentesEncomendas;
+                const btn = document.getElementById('btn-filtro-enc-pendentes');
+                btn.className = apenasPendentesEncomendas
+                    ? 'px-3 py-1.5 rounded text-xs font-semibold bg-emerald-700 text-white transition'
+                    : 'px-3 py-1.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition';
+                renderEncomendas();
+            }
+        }
 
         function getVigilanteAtual() {
             try {
@@ -963,10 +1074,30 @@
             }
         }
 
-        async function loadPedestres() {
-            const dados = await (await fetch('/api/pedestres')).json().catch(() => []);
-            document.getElementById('cnt-ped').innerText = dados.filter(x => x.status === 'NO_LOCAL').length;
-            document.getElementById('tb-pedestres').innerHTML = dados.map(p => {
+        function renderPedestres() {
+            atualizarBotaoLimpar('filtro-pedestres');
+            const termo = normalizarTexto(document.getElementById('filtro-pedestres')?.value);
+
+            let lista = Array.isArray(cachePedestres) ? cachePedestres : [];
+            if (apenasPendentesPedestres) {
+                lista = lista.filter(p => p.status === 'NO_LOCAL');
+            }
+            if (termo) {
+                lista = lista.filter(p => {
+                    const alvo = normalizarTexto([
+                        p.nome, p.tipo, p.documento, p.destino, p.responsavel, p.departamento,
+                        p.status === 'NO_LOCAL' ? 'no local' : 'saiu'
+                    ].join(' '));
+                    return alvo.includes(termo);
+                });
+            }
+
+            const resumo = document.getElementById('resumo-filtro-pedestres');
+            if (resumo) {
+                resumo.innerText = `Exibindo ${lista.length} de ${cachePedestres.length}`;
+            }
+
+            document.getElementById('tb-pedestres').innerHTML = lista.map(p => {
                 const infoExtra = [
                     p.tipo || null,
                     p.documento || null,
@@ -984,7 +1115,14 @@
                         <td class="p-3 text-right">${p.status === 'NO_LOCAL' ? `<button onclick="sairPedestre(${p.id})" class="bg-slate-800 text-white px-2.5 py-1 rounded text-xs">Saída</button>` : '-'}</td>
                     </tr>
                 `;
-            }).join('');
+            }).join('') || '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum registro encontrado</td></tr>';
+        }
+
+        async function loadPedestres() {
+            const dados = await (await fetch('/api/pedestres')).json().catch(() => []);
+            cachePedestres = Array.isArray(dados) ? dados : [];
+            document.getElementById('cnt-ped').innerText = cachePedestres.filter(x => x.status === 'NO_LOCAL').length;
+            renderPedestres();
         }
 
         async function addPedestre(e) {
@@ -1124,10 +1262,30 @@
             document.getElementById('sugestoes-frota').classList.add('hidden');
         }
 
-        async function loadFrotas() {
-            const dados = await (await fetch('/api/veiculos')).json().catch(() => []);
-            document.getElementById('cnt-fro').innerText = dados.filter(x => x.status !== 'FINALIZADO').length;
-            document.getElementById('tb-frotas').innerHTML = dados.map(v => {
+        function renderFrotas() {
+            atualizarBotaoLimpar('filtro-frotas');
+            const termo = normalizarTexto(document.getElementById('filtro-frotas')?.value);
+
+            let lista = Array.isArray(cacheFrotas) ? cacheFrotas : [];
+            if (apenasPendentesFrotas) {
+                lista = lista.filter(v => v.status !== 'FINALIZADO');
+            }
+            if (termo) {
+                lista = lista.filter(v => {
+                    const alvo = normalizarTexto([
+                        v.placa, v.modelo, v.motorista, v.documento, v.empresa, v.destino_origem,
+                        v.status !== 'FINALIZADO' ? 'ativo' : 'finalizado'
+                    ].join(' '));
+                    return alvo.includes(termo);
+                });
+            }
+
+            const resumo = document.getElementById('resumo-filtro-frotas');
+            if (resumo) {
+                resumo.innerText = `Exibindo ${lista.length} de ${cacheFrotas.length}`;
+            }
+
+            document.getElementById('tb-frotas').innerHTML = lista.map(v => {
                 const motInfo = [
                     v.motorista || '-',
                     v.documento ? `Doc: ${v.documento}` : null,
@@ -1145,7 +1303,14 @@
                         <td class="p-3 text-right">${v.status !== 'FINALIZADO' ? `<button onclick="retornarFrota(${v.id}, '${v.tipo_operacao}')" class="bg-blue-700 text-white px-2.5 py-1 rounded text-xs">Finalizar</button>` : '-'}</td>
                     </tr>
                 `;
-            }).join('');
+            }).join('') || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum registro encontrado</td></tr>';
+        }
+
+        async function loadFrotas() {
+            const dados = await (await fetch('/api/veiculos')).json().catch(() => []);
+            cacheFrotas = Array.isArray(dados) ? dados : [];
+            document.getElementById('cnt-fro').innerText = cacheFrotas.filter(x => x.status !== 'FINALIZADO').length;
+            renderFrotas();
         }
 
         async function addFrota(e) {
@@ -1234,10 +1399,30 @@
         }
 
         // ================= ENCOMENDAS =================
-        async function loadEncomendas() {
-            const dados = await (await fetch('/api/encomendas')).json().catch(() => []);
-            document.getElementById('cnt-enc').innerText = dados.filter(x => x.status === 'AGUARDANDO_RETIRADA').length;
-            document.getElementById('tb-encomendas').innerHTML = dados.map(enc => `
+        function renderEncomendas() {
+            atualizarBotaoLimpar('filtro-encomendas');
+            const termo = normalizarTexto(document.getElementById('filtro-encomendas')?.value);
+
+            let lista = Array.isArray(cacheEncomendas) ? cacheEncomendas : [];
+            if (apenasPendentesEncomendas) {
+                lista = lista.filter(e => e.status === 'AGUARDANDO_RETIRADA');
+            }
+            if (termo) {
+                lista = lista.filter(e => {
+                    const alvo = normalizarTexto([
+                        e.destinatario, e.setor, e.remetente, e.tipo_volume, e.retirado_por,
+                        e.status === 'AGUARDANDO_RETIRADA' ? 'pendente' : 'entregue'
+                    ].join(' '));
+                    return alvo.includes(termo);
+                });
+            }
+
+            const resumo = document.getElementById('resumo-filtro-encomendas');
+            if (resumo) {
+                resumo.innerText = `Exibindo ${lista.length} de ${cacheEncomendas.length}`;
+            }
+
+            document.getElementById('tb-encomendas').innerHTML = lista.map(enc => `
                 <tr>
                     <td class="p-3">${fmtHora(enc.data_chegada)}</td>
                     <td class="p-3 font-medium">${enc.destinatario}</td>
@@ -1245,7 +1430,14 @@
                     <td class="p-3">${enc.status === 'AGUARDANDO_RETIRADA' ? '<span class="px-2 py-0.5 text-xs bg-emerald-100 text-emerald-800 rounded">Pendente</span>' : '<span class="px-2 py-0.5 text-xs bg-slate-200 rounded">Entregue</span>'}</td>
                     <td class="p-3 text-right">${enc.status === 'AGUARDANDO_RETIRADA' ? `<button onclick="entregarEnc(${enc.id})" class="bg-emerald-700 text-white px-2.5 py-1 rounded text-xs">Entregar</button>` : '-'}</td>
                 </tr>
-            `).join('');
+            `).join('') || '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum registro encontrado</td></tr>';
+        }
+
+        async function loadEncomendas() {
+            const dados = await (await fetch('/api/encomendas')).json().catch(() => []);
+            cacheEncomendas = Array.isArray(dados) ? dados : [];
+            document.getElementById('cnt-enc').innerText = cacheEncomendas.filter(x => x.status === 'AGUARDANDO_RETIRADA').length;
+            renderEncomendas();
         }
 
         async function addEncomenda(e) {
