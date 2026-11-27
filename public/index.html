@@ -134,14 +134,15 @@
                 </div>
 
                 <!-- Campos Visitante -->
-                <div id="campos-visitante" class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-start">
-                    <input type="text" id="p-nome" placeholder="Nome Completo *" required class="border p-2 rounded">
+                <div id="campos-visitante" class="grid grid-cols-1 sm:grid-cols-6 gap-3 items-start">
+                    <input type="text" id="p-nome" placeholder="Nome Completo *" required class="border p-2 rounded sm:col-span-2">
                     <input type="text" id="p-doc" placeholder="CPF ou RG *" required class="border p-2 rounded">
                     <input type="text" id="p-destino" placeholder="Destino dentro da empresa *" required class="border p-2 rounded">
                     <input type="text" id="p-resp" placeholder="Responsável *" required class="border p-2 rounded">
-                    <div>
-                        <input type="time" id="p-hora-vis" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
-                        <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <input type="date" id="p-data-vis" title="Data manual (opcional)" class="border p-2 rounded w-full text-xs">
+                        <input type="time" id="p-hora-vis" title="Horário manual (opcional)" class="border p-2 rounded w-full text-xs">
+                        <span class="text-[10px] text-slate-400 col-span-2 block">Data/Hora manual (vazio = agora)</span>
                     </div>
                 </div>
 
@@ -159,9 +160,10 @@
                         class="border p-2 rounded bg-slate-50 text-slate-700">
                     <input type="text" id="p-colab-depto" placeholder="Departamento" readonly
                         class="border p-2 rounded bg-slate-50 text-slate-600">
-                    <div>
-                        <input type="time" id="p-hora-colab" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
-                        <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <input type="date" id="p-data-colab" title="Data manual (opcional)" class="border p-2 rounded w-full text-xs">
+                        <input type="time" id="p-hora-colab" title="Horário manual (opcional)" class="border p-2 rounded w-full text-xs">
+                        <span class="text-[10px] text-slate-400 col-span-2 block">Data/Hora manual (vazio = agora)</span>
                     </div>
                 </div>
 
@@ -242,9 +244,10 @@
                         </div>
                     </div>
 
-                    <div>
-                        <input type="time" id="f-hora-frota" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
-                        <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+                    <div class="grid grid-cols-2 gap-1.5 sm:col-span-2">
+                        <input type="date" id="f-data-frota" title="Data manual (opcional)" class="border p-2 rounded w-full text-xs">
+                        <input type="time" id="f-hora-frota" title="Horário manual (opcional)" class="border p-2 rounded w-full text-xs">
+                        <span class="text-[10px] text-slate-400 col-span-2 block">Data/Hora manual (vazio = agora)</span>
                     </div>
                     <input type="number" id="f-km" placeholder="KM Inicial" class="border p-2 rounded sm:col-span-2">
                 </div>
@@ -256,12 +259,11 @@
                     <input type="text" id="fv-placa" placeholder="Placa do Veículo *" class="border p-2 rounded uppercase">
                     <input type="text" id="fv-modelo" placeholder="Modelo do Veículo" class="border p-2 rounded">
                     <input type="text" id="fv-empresa" placeholder="Empresa" class="border p-2 rounded">
-                    <div>
-                        <input type="text" id="fv-destino" placeholder="Destino" class="border p-2 rounded w-full">
-                    </div>
-                    <div>
-                        <input type="time" id="f-hora-vis" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
-                        <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+                    <input type="text" id="fv-destino" placeholder="Destino" class="border p-2 rounded w-full">
+                    <div class="grid grid-cols-2 gap-1.5 sm:col-span-2">
+                        <input type="date" id="f-data-vis" title="Data manual (opcional)" class="border p-2 rounded w-full text-xs">
+                        <input type="time" id="f-hora-vis" title="Horário manual (opcional)" class="border p-2 rounded w-full text-xs">
+                        <span class="text-[10px] text-slate-400 col-span-2 block">Data/Hora manual (vazio = agora)</span>
                     </div>
                 </div>
 
@@ -314,9 +316,10 @@
                     <input type="text" id="e-setor" placeholder="Setor / Departamento" class="border p-2 rounded">
                     <input type="text" id="e-rem" placeholder="Remetente *" required class="border p-2 rounded">
                     <input type="text" id="e-vol" placeholder="Volume / NF" class="border p-2 rounded">
-                    <div>
-                        <input type="time" id="e-hora" title="Horário manual (opcional)" class="border p-2 rounded w-full text-sm">
-                        <span class="text-[10px] text-slate-400 block mt-0.5">Hora manual (vazio = agora)</span>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <input type="date" id="e-data" title="Data manual (opcional)" class="border p-2 rounded w-full text-xs">
+                        <input type="time" id="e-hora" title="Horário manual (opcional)" class="border p-2 rounded w-full text-xs">
+                        <span class="text-[10px] text-slate-400 col-span-2 block">Data/Hora manual (vazio = agora)</span>
                     </div>
                 </div>
                 <div class="flex justify-end">
@@ -598,13 +601,26 @@
             atualizarInterfaceVigilante();
         }
 
-        function montarDataManual(horaStr) {
-            if (!horaStr) return null;
-            const [hh, mm] = horaStr.split(':').map(Number);
-            if (Number.isNaN(hh) || Number.isNaN(mm)) return null;
-            const agora = new Date();
-            agora.setHours(hh, mm, 0, 0);
-            return agora.toISOString();
+        function montarDataManual(dataStr, horaStr) {
+            if (!dataStr && !horaStr) return null;
+
+            const base = new Date();
+
+            if (dataStr) {
+                const partes = String(dataStr).split('-').map(Number);
+                if (partes.length === 3 && !partes.some(Number.isNaN)) {
+                    base.setFullYear(partes[0], partes[1] - 1, partes[2]);
+                }
+            }
+
+            if (horaStr) {
+                const [hh, mm] = String(horaStr).split(':').map(Number);
+                if (!Number.isNaN(hh) && !Number.isNaN(mm)) {
+                    base.setHours(hh, mm, 0, 0);
+                }
+            }
+
+            return Number.isNaN(base.getTime()) ? null : base.toISOString();
         }
 
         function selecionarAba(nome, inputId) {
@@ -974,10 +990,13 @@
         async function addPedestre(e) {
             e.preventDefault();
             const ehColab = tipoPedestreAtual === 'Colaborador';
+            const dataVal = ehColab
+                ? document.getElementById('p-data-colab').value
+                : document.getElementById('p-data-vis').value;
             const horaVal = ehColab
                 ? document.getElementById('p-hora-colab').value
                 : document.getElementById('p-hora-vis').value;
-            const dataManual = montarDataManual(horaVal);
+            const dataManual = montarDataManual(dataVal, horaVal);
 
             const payload = ehColab
                 ? {
@@ -1134,7 +1153,10 @@
             const ehFrota = tipoFrotaAtual === 'FROTA';
 
             if (ehFrota) {
-                const dataManual = montarDataManual(document.getElementById('f-hora-frota').value);
+                const dataManual = montarDataManual(
+                    document.getElementById('f-data-frota').value,
+                    document.getElementById('f-hora-frota').value
+                );
                 const placa = document.getElementById('f-placa').value.trim().toUpperCase();
                 const modelo = document.getElementById('f-modelo').value.trim();
                 const motorista = document.getElementById('f-motorista').value.trim();
@@ -1161,7 +1183,10 @@
                     })
                 });
             } else {
-                const dataManual = montarDataManual(document.getElementById('f-hora-vis').value);
+                const dataManual = montarDataManual(
+                    document.getElementById('f-data-vis').value,
+                    document.getElementById('f-hora-vis').value
+                );
                 const motorista = document.getElementById('fv-motorista').value.trim();
                 const documento = document.getElementById('fv-doc').value.trim();
                 const placa = document.getElementById('fv-placa').value.trim().toUpperCase();
@@ -1225,7 +1250,10 @@
 
         async function addEncomenda(e) {
             e.preventDefault();
-            const dataManual = montarDataManual(document.getElementById('e-hora').value);
+            const dataManual = montarDataManual(
+                document.getElementById('e-data').value,
+                document.getElementById('e-hora').value
+            );
             const res = await fetch('/api/encomendas', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
